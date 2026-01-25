@@ -1,62 +1,112 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { FaUserCheck, FaClock, FaHeadset, FaCalendarCheck } from "react-icons/fa";
+import { FaUserCheck, FaCalendarCheck, FaClock, FaHeadset } from "react-icons/fa";
 
 const WhyChooseUs = () => {
   const features = [
     {
+      id: 1,
       icon: <FaUserCheck />,
       title: "Professional Cooks",
-      desc: "Verified, trained, and experienced chefs for your home.",
+      desc: "Verified, trained, and experienced chefs handpicked for your home kitchen.",
     },
     {
+      id: 2,
       icon: <FaCalendarCheck />,
       title: "Easy Booking",
-      desc: "Book a cook in just a few clicks. Simple and fast.",
+      desc: "Book a cook in just a few clicks via our app. Simple, fast, and paperless.",
     },
     {
+      id: 3,
       icon: <FaClock />,
       title: "Timely Service",
-      desc: "Punctual cooks who value your time and schedule.",
+      desc: "Punctual professionals who value your time. We track attendance digitally.",
     },
     {
+      id: 4,
       icon: <FaHeadset />,
       title: "Prompt Support",
-      desc: "24/7 customer support to assist you with any queries.",
+      desc: "24/7 dedicated customer support to assist you with any queries or changes.",
     },
   ];
 
-  return (
-    <section className="bg-secondary text-white py-20 font-outfit">
-      <div className="container mx-auto px-6 text-center">
-        <motion.h2
-          initial={{ opacity: 0, y: -20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          className="text-4xl md:text-5xl font-bold mb-16"
-        >
-          Why Choose <span className="text-primary">ChefKart?</span>
-        </motion.h2>
+  // Animation Variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.2 }
+    }
+  };
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+  const itemVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
+  };
+
+  return (
+    <section className="bg-gray-900 text-white py-24 relative overflow-hidden">
+
+      {/* Background Decor (Subtle Gradient) */}
+      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-orange-600/10 rounded-full blur-[120px] pointer-events-none"></div>
+      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-blue-600/5 rounded-full blur-[100px] pointer-events-none"></div>
+
+      <div className="container mx-auto px-6 relative z-10">
+
+        {/* Header */}
+        <div className="text-center mb-20">
+          <motion.h2
+            initial={{ opacity: 0, y: -20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-4xl md:text-5xl font-extrabold mb-6 tracking-tight"
+          >
+            Why Choose <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-600">ChefKart?</span>
+          </motion.h2>
+          <motion.p
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="text-gray-400 max-w-2xl mx-auto text-lg"
+          >
+            We don't just provide cooks; we provide a seamless culinary experience tailored to your lifestyle.
+          </motion.p>
+        </div>
+
+        {/* Features Grid */}
+        <motion.div
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+        >
           {features.map((feature, index) => (
             <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              whileHover={{ scale: 1.05, backgroundColor: "#2A2A2A" }}
-              className="bg-gray-800/50 p-8 rounded-2xl shadow-lg border border-gray-700 flex flex-col items-center transition-colors duration-300"
+              key={feature.id}
+              variants={itemVariants}
+              whileHover={{ y: -10 }}
+              className="group bg-gray-800/50 backdrop-blur-sm p-8 rounded-3xl border border-gray-700 hover:border-orange-500/50 hover:bg-gray-800 transition-all duration-300 relative overflow-hidden"
             >
-              <div className="text-5xl text-primary mb-6 bg-gray-700/50 p-4 rounded-full">
+              {/* Hover Glow Effect */}
+              <div className="absolute inset-0 bg-gradient-to-br from-orange-500/0 to-orange-500/0 group-hover:from-orange-500/5 group-hover:to-transparent transition-all duration-500"></div>
+
+              {/* Icon */}
+              <div className="w-16 h-16 rounded-2xl bg-gray-700 group-hover:bg-orange-500 text-orange-500 group-hover:text-white flex items-center justify-center text-3xl mb-6 transition-all duration-300 shadow-lg group-hover:shadow-orange-500/40">
                 {feature.icon}
               </div>
-              <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
-              <p className="text-gray-400 text-sm leading-relaxed">
+
+              {/* Content */}
+              <h3 className="text-xl font-bold mb-3 text-white group-hover:text-orange-400 transition-colors">
+                {feature.title}
+              </h3>
+              <p className="text-gray-400 text-sm leading-relaxed group-hover:text-gray-300">
                 {feature.desc}
               </p>
             </motion.div>
           ))}
-        </div>
+        </motion.div>
+
       </div>
     </section>
   );

@@ -20,7 +20,7 @@ const Chef = lazy(() => import("./components/Chefforparty/Chef"));
 const Testi = lazy(() => import("./components/Testimonial/Testi"));
 const Career = lazy(() => import("./components/Career/Career"));
 const Blog = lazy(() => import("./components/Blog/Blog"));
-const Investor = lazy(() => import("./components/Investor/Invest"));
+const Investor = lazy(() => import("./components/Investor/Invest.js"));
 
 // 1. Create a "Layout" component
 // This renders the consistent parts of your page (Nav, Footer) once,
