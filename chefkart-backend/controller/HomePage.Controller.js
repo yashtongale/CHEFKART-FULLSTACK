@@ -1,161 +1,152 @@
-const { cloudinary } = require("../config/cloudinary");
-const Home = require("../models/HomeImage.Model");
+import Home from "../models/HomePage.model.js";
+import { cloudinary } from "../config/cloudinary.js";
+import createError from "http-errors";
 
-//create a new blog post with the provided data
-
-const createKitchen = async (req, res) => {
+/**
+ * @desc    Create a new homepage section
+ * @route   POST /api/v1/home-page/create
+ * @access  Private (Admin)
+ */
+export const createKitchen = async (req, res, next) => {
   try {
-    const { title, content, category, image } = req.body;
-    /// validation process
-    if (!title || !content || !category || !image) {
-      return res.status(400).json({ message: "Please fill in all fields" });
-    }
-    // check   if the blog is already exists
-    const existingData=await Home.findOne({title})
+    const { title, content, category } = req.body;
 
-    if(existingData){
-      return res.status(400).json({message:"This blog already exists"})
+    // 1. Validation
+    if (!title || !content || !category) {
+      return next(createError.BadRequest("Title, content, and category are required."));
     }
 
-    
-    const newHome = new Home({
+    // 2. Check existence
+    const existingData = await Home.findOne({ title });
+    if (existingData) {
+      return next(createError.Conflict("A section with this title already exists."));
+    }
+
+    // 3. Handle Image (processed via Multer middleware)
+    let imageUrl = "";
+    let imagePublicId = "";
+
+    if (req.file) {
+      imageUrl = req.file.path;
+      imagePublicId = req.file.filename;
+    } else {
+      return next(createError.BadRequest("An image is required for this section."));
+    }
+
+    // 4. Save to DB
+    const newSection = await Home.create({
       title,
       content,
       category,
-      image,
+      image: imageUrl,
+      imagePublicId
     });
-    await newHome.save();
 
     res.status(201).json({
-      message: "Home Page is successfully created",
-      
+      status: "success",
+      message: "Homepage section created successfully",
+      data: newSection,
     });
   } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({
-      message: "Internal server error",
-    });
+    next(error);
   }
 };
 
-// get all blog posts
-const getallHomeImage = async (req, res) => {
+/**
+ * @desc    Get all homepage sections
+ * @route   GET /api/v1/home-page/all
+ */
+export const getallHomeImage = async (req, res, next) => {
   try {
-    const Homes = await Home.find();
-
-    if (!Homes.length) {
-      return res.status(404).json({ message: "No Home posts found" });
-    }
-    
-    res.status(200).json(Homes); // Corrected from "blog" to "blogs"
-  } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({
-      message: "Internal server error",
-    });
-  }
-};
-
-
-//getting a single blog
-const getHomeById = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const Homes= await Home.findById(id); // Changed "blogs" to "blog"
-
-    if (!Homes) {
-      return res.status(404).json({ message: "Homes not found" });
-    }
-    res.status(200).json(Homes); // Now correctly returning "blog"
-  } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({
-      message: "Internal server error",
-    });
-  }
-};
-
-
-// update all blogs
-const updateHomePage = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { title, content, category, image } = req.body;
-    let imageUrl = "";
-    //image uploading process
-    if (image) {
-      const result = await cloudinary.uploader.upload(image, {
-        folder: "blogs",
-      });
-      imageUrl = result.secure_url;
-    }
-    const updatedhome = await Home.findByIdAndUpdate(
-      id,
-      {
-        title,
-        content,
-        category,
-        image: imageUrl,
-      },
-      { new: true }
-    );
-
-    if (!updatedhome) {
-      return res.status(404).json({ message: "Blog not found" });
-    }
+    const sections = await Home.find().sort({ category: 1 });
 
     res.status(200).json({
-      message: "homePage  is successfully updated successfully",
-      updatedhome,
+      status: "success",
+      results: sections.length,
+      data: sections,
     });
   } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({
-      message: "Internal server error",
-    });
+    next(error);
   }
 };
 
-// delete a blog post by id
-
-const deletehomePage = async (req, res) => {
+/**
+ * @desc    Get single section by ID
+ * @route   GET /api/v1/home-page/:id
+ */
+export const getHomeById = async (req, res, next) => {
   try {
-    const { id } = req.params;
- 
-
-    // Validate if ID is a valid MongoDB ObjectId
-    if (!id.match(/^[0-9a-fA-F]{24}$/)) {
-      return res.status(400).json({ message: "Invalid blog ID format" });
-    }
-
-    // Check if the blog exists before deletion
-    const existingHome = await Home.findById(id);
-    if (!existingHome) {
-      return res.status(404).json({ message: "Home not found" });
-    }
-
-    // Delete the blog
-    const deletedHome = await Home.findByIdAndDelete(id);
+    const section = await Home.findById(req.params.id);
+    if (!section) return next(createError.NotFound("Section not found."));
 
     res.status(200).json({
-      message: "Home successfully deleted",
-      deletedHome,
+      status: "success",
+      data: section,
     });
   } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({
-      message: "Internal server error",
-    });
+    next(error);
   }
 };
 
+/**
+ * @desc    Update homepage section
+ * @route   PATCH /api/v1/home-page/:id
+ */
+export const updateHomePage = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const section = await Home.findById(id);
 
+    if (!section) return next(createError.NotFound("Section not found."));
 
-module.exports={
-    createKitchen,
-    getallHomeImage,
-    getHomeById,
-    updateHomePage,
-    deletehomePage
+    let updateData = { ...req.body };
+
+    // Handle Image Replacement
+    if (req.file) {
+      // Delete old image from Cloudinary
+      if (section.imagePublicId) {
+        await cloudinary.uploader.destroy(section.imagePublicId);
+      }
+      updateData.image = req.file.path;
+      updateData.imagePublicId = req.file.filename;
+    }
+
+    const updatedSection = await Home.findByIdAndUpdate(id, updateData, {
+      new: true,
+      runValidators: true,
+    });
+
+    res.status(200).json({
+      status: "success",
+      message: "Homepage section updated successfully",
+      data: updatedSection,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Delete homepage section and clean storage
+ * @route   DELETE /api/v1/home-page/:id
+ */
+export const deletehomePage = async (req, res, next) => {
+  try {
+    const section = await Home.findById(req.params.id);
+    if (!section) return next(createError.NotFound("Section not found."));
+
+    // Cleanup Cloudinary
+    if (section.imagePublicId) {
+      await cloudinary.uploader.destroy(section.imagePublicId);
+    }
+
+    await Home.findByIdAndDelete(req.params.id);
+
+    res.status(200).json({
+      status: "success",
+      message: "Section deleted successfully.",
+    });
+  } catch (error) {
+    next(error);
+  }
 };

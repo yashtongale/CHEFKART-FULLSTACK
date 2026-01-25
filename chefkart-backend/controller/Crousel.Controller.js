@@ -1,163 +1,163 @@
-const {cloudinary } = require("../config/cloudinary");
-const Crousel=require('../models/Crousel.Model');
-const {mongoose}=require('mongoose');
-// create a crousel
+import Carousel from '../models/Carousel.model.js';
+import { cloudinary } from '../config/cloudinary.js';
+import createError from 'http-errors';
 
-const createCrousel=async(req,res)=>{
-     try{
-         const {title, content, image , action}=req.body;
-         
-         if(!title || !content || !image || !action){
-             return res.status(400).json({message:"Please fill in all fields"});
-         }
-         const newCrousel=new Crousel({
-            title, 
-            content, 
-            image, 
-            action
-         })
-         await newCrousel.save();
-
-         res.status(201).json({
-            message:"Crousel created successfully",
-            data:newCrousel
-         
-         })
-
-     }
-     catch(error){
-         console.error("Error:",error);
-         res.status(500).json({
-             message:"Internal server error"
-         });
-     }
-}
-// get all crousel
-
-const getAllCrousel=async(req,res)=>{
-     try{
-         const Crousels=await Crousel.find();
-
-         res.status(200).json(Crousels);
-
-     }
-     catch(error){
-            console.error("Error:",error);
-            res.status(500).json({
-                message:"Internal server error"
-            });
-     }
-}
-
-const getCrouselById=async(req,res)=>{
-    try{
-
-         const {id}= req.params;
-
-         const Crousels=await Crousel.findById(id);
-
-         res.status(200).json(Crousels);
-
-    }
-    catch(error){
-        console.error("Error:", error);
-        res.status(500).json({
-            message:"Internal server error"
-        });
-    }
-}
-
-const updateCrousel = async (req, res) => {
+/**
+ * @desc    Create a new Carousel slide
+ * @route   POST /api/v1/carousel/create
+ * @access  Private (Admin)
+ */
+export const createCarousel = async (req, res, next) => {
     try {
-        const { id } = req.params;
-        const { title, content, image, action } = req.body;
+        const { title, content, action } = req.body;
+
+        // 1. Basic Validation
+        if (!title || !content || !action) {
+            return next(createError.BadRequest("Title, content, and action link are required."));
+        }
+
+        // 2. Handle Image Upload (Multer middleware handles this)
         let imageUrl = "";
+        let imagePublicId = "";
 
-        console.log("Updating Crousel with ID:", id);
-
-        // Validate ID
-        if (!mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({ message: "Invalid Crousel ID" });
+        if (req.file) {
+            imageUrl = req.file.path;
+            imagePublicId = req.file.filename;
+        } else {
+            return next(createError.BadRequest("Carousel image is required."));
         }
 
-        // Find existing Crousel
-        const existingCrousel = await Crousel.findById(id);
-        if (!existingCrousel) {
-            return res.status(404).json({ message: "Crousel not found" });
-        }
+        // 3. Save to DB
+        const newSlide = await Carousel.create({
+            title,
+            content,
+            action,
+            image: imageUrl,
+            imagePublicId
+        });
 
-        // Upload new image if provided, otherwise keep existing image
-        imageUrl = image
-            ? (await cloudinary.uploader.upload(image, { folder: "Crousel" })).secure_url
-            : existingCrousel.image;
-
-        // Update the document
-        const updatedCrousel = await Crousel.findByIdAndUpdate(
-            id,
-            { title, content, image: imageUrl, action },
-            { new: true }
-        );
-
-        res.status(200).json({
-            message: "Crousel updated successfully",
-            data: updatedCrousel,
+        res.status(201).json({
+            status: 'success',
+            message: "Carousel slide created successfully",
+            data: newSlide
         });
     } catch (error) {
-        console.error("Error updating Crousel:", error);
-        res.status(500).json({ message: "Internal server error" });
+        next(error);
     }
 };
 
-// delete a crousel
- const deleteCrouselById=async(req,res)=>{
-     try{
-        const {id}=req.params;
-
-        if (!id.match(/^[0-9a-fA-F]{24}$/)) {
-            return res.status(400).json({ message: "Invalid blog ID format" });
-          }
-
-        const existingCrousel=await Crousel.findById(id);
-
-        if(!existingCrousel){
-            return res.status(404).json({
-                message: "Crousel not found"
-            })
-        }
-        // delete the crousel
-        const deleteCrousel=await Crousel.findByIdAndDelete(id);
+/**
+ * @desc    Get all Carousel slides
+ * @route   GET /api/v1/carousel/all
+ */
+export const getAllCarousel = async (req, res, next) => {
+    try {
+        const slides = await Carousel.find().sort({ createdAt: -1 });
 
         res.status(200).json({
-            message:"Crousel deleted successfully",
-            data:deleteCrousel
-        })
-
-
-     }catch(error){
-            console.error("Error:", error);
-            res.status(500).json({
-                message:"Internal server error"
-            });
-     }
- }
-
- const deleteCrousel=async(req,res)=>{
-     try{
-         const Crousels=await Crousel.deleteMany();
-
-         res.status(200).json({
-            message:"All crousels deleted successfully",
-            data:Crousels
-         })
-         
-
-     }
-     catch(error){
-        console.error("Error:", error);
-        res.status(500).json({
-            message:"Internal server error"
+            status: 'success',
+            results: slides.length,
+            data: slides
         });
-     }
- }
+    } catch (error) {
+        next(error);
+    }
+};
 
-module.exports={createCrousel, getAllCrousel,getCrouselById,updateCrousel,deleteCrouselById,deleteCrousel}
+/**
+ * @desc    Get single slide by ID
+ * @route   GET /api/v1/carousel/:id
+ */
+export const getCarouselById = async (req, res, next) => {
+    try {
+        const slide = await Carousel.findById(req.params.id);
+        if (!slide) return next(createError.NotFound("Slide not found"));
+
+        res.status(200).json({
+            status: 'success',
+            data: slide
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * @desc    Update Carousel slide
+ * @route   PATCH /api/v1/carousel/:id
+ */
+export const updateCarousel = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const slide = await Carousel.findById(id);
+
+        if (!slide) return next(createError.NotFound("Slide not found"));
+
+        let updateData = { ...req.body };
+
+        // Handle Image Replacement
+        if (req.file) {
+            // Delete old image from Cloudinary
+            if (slide.imagePublicId) {
+                await cloudinary.uploader.destroy(slide.imagePublicId);
+            }
+            updateData.image = req.file.path;
+            updateData.imagePublicId = req.file.filename;
+        }
+
+        const updatedSlide = await Carousel.findByIdAndUpdate(id, updateData, {
+            new: true,
+            runValidators: true
+        });
+
+        res.status(200).json({
+            status: 'success',
+            message: "Carousel updated successfully",
+            data: updatedSlide
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * @desc    Delete single slide
+ * @route   DELETE /api/v1/carousel/:id
+ */
+export const deleteCarouselById = async (req, res, next) => {
+    try {
+        const slide = await Carousel.findById(req.params.id);
+        if (!slide) return next(createError.NotFound("Slide not found"));
+
+        // Clean up Cloudinary storage
+        if (slide.imagePublicId) {
+            await cloudinary.uploader.destroy(slide.imagePublicId);
+        }
+
+        await Carousel.findByIdAndDelete(req.params.id);
+
+        res.status(200).json({
+            status: 'success',
+            message: "Slide deleted successfully"
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * @desc    Delete all slides (Admin only)
+ * @route   DELETE /api/v1/carousel/delete-all
+ */
+export const deleteAllCarousel = async (req, res, next) => {
+    try {
+        // Note: In production, you should ideally loop and delete images from Cloudinary first
+        await Carousel.deleteMany();
+        res.status(200).json({
+            status: 'success',
+            message: "All slides deleted successfully"
+        });
+    } catch (error) {
+        next(error);
+    }
+};

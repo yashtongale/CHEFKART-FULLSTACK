@@ -1,93 +1,90 @@
-const { cloudinary } = require("../config/cloudinary");
-const Food= require("../models/FoodgGallery.Model");
+import FoodGallery from "../models/FoodGallery.model.js";
+import { cloudinary } from "../config/cloudinary.js";
+import createError from "http-errors";
 
-//create a new blog post with the provided data
-
-const createFood = async (req, res) => {
+/**
+ * @desc    Upload a new photo to the Food Gallery
+ * @route   POST /api/v1/food-gallery/create
+ * @access  Private (Admin/Chef)
+ */
+export const createFood = async (req, res, next) => {
   try {
-    const {  image } = req.body;
-    /// validation process
-    if ( !image) {
-      return res.status(400).json({ message: "Please fill in all fields" });
-    }
-    // check   if the blog is already exists
-  
+    // 1. Handle Image Upload (Middleware logic)
+    let imageUrl = "";
+    let imagePublicId = "";
 
-    
-    const newHome = new Food({
-      
-      image,
+    if (req.file) {
+      imageUrl = req.file.path;
+      imagePublicId = req.file.filename;
+    } else {
+      return next(createError.BadRequest("Please upload an image file."));
+    }
+
+    // 2. Create entry in Database (Fixed 'new Home' bug)
+    const newEntry = await FoodGallery.create({
+      image: imageUrl,
+      imagePublicId,
+      caption: req.body.caption || ""
     });
-    await newHome.save();
 
     res.status(201).json({
-      message: "Food Page is successfully created",
-      
+      status: "success",
+      message: "Food gallery image uploaded successfully",
+      data: newEntry,
     });
   } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({
-      message: "Internal server error",
-    });
+    next(error); // Pass to global error handler
   }
 };
 
-// get all blog posts
-const getallFood = async (req, res) => {
+/**
+ * @desc    Get all gallery images
+ * @route   GET /api/v1/food-gallery/all
+ * @access  Public
+ */
+export const getallFood = async (req, res, next) => {
   try {
-    const Homes = await Food.find();
-
- 
-    
-    res.status(200).json(Homes); // Corrected from "blog" to "blogs"
-  } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({
-      message: "Internal server error",
-    });
-  }
-};
-
-
-//getting a single blog
-
-
-
-// update all blogs
-
-// delete a blog post by id
-
-const deleteFood = async (req, res) => {
-  try {
-    const { id } = req.params;
- 
-
-    // Validate if ID is a valid MongoDB ObjectId
-    if (!id.match(/^[0-9a-fA-F]{24}$/)) {
-      return res.status(400).json({ message: "Invalid blog ID format" });
-    }
-
-   
-
-    // Delete the blog
-    const deletedFood = await Food.findByIdAndDelete(id);
+    // Sort by newest first so the gallery feels fresh
+    const images = await FoodGallery.find().sort({ createdAt: -1 });
 
     res.status(200).json({
-      message: "Food successfully deleted",
-      deletedFood,
+      status: "success",
+      results: images.length,
+      data: images,
     });
   } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({
-      message: "Internal server error",
-    });
+    next(error);
   }
 };
 
+/**
+ * @desc    Delete a gallery image from DB and Cloudinary
+ * @route   DELETE /api/v1/food-gallery/delete/:id
+ * @access  Private (Admin)
+ */
+export const deleteFood = async (req, res, next) => {
+  try {
+    const { id } = req.params;
 
+    // 1. Find the record
+    const record = await FoodGallery.findById(id);
+    if (!record) {
+      return next(createError.NotFound("Image not found in gallery."));
+    }
 
-module.exports={
-    createFood ,
-    getallFood,
-    deleteFood 
+    // 2. Delete from Cloudinary first (Storage Cleanup)
+    if (record.imagePublicId) {
+      await cloudinary.uploader.destroy(record.imagePublicId);
+    }
+
+    // 3. Delete from MongoDB
+    await FoodGallery.findByIdAndDelete(id);
+
+    res.status(200).json({
+      status: "success",
+      message: "Image successfully removed from gallery and cloud storage.",
+    });
+  } catch (error) {
+    next(error);
+  }
 };

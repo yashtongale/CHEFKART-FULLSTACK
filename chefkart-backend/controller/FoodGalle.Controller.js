@@ -1,93 +1,90 @@
-const { cloudinary } = require("../config/cloudinary");
-const FoodGaller= require("../models/FoodgGall.Model");
+import FoodGallery from "../models/FoodGallery.model.js";
+import { cloudinary } from "../config/cloudinary.js";
+import createError from "http-errors";
 
-//create a new blog post with the provided data
-
-const createFood = async (req, res) => {
+/**
+ * @desc    Upload a new image to the food gallery
+ * @route   POST /api/v1/food-gallery/create
+ * @access  Private (Admin/Chef)
+ */
+export const createFood = async (req, res, next) => {
   try {
-    const {  image } = req.body;
-    /// validation process
-    if ( !image) {
-      return res.status(400).json({ message: "Please fill in all fields" });
-    }
-    // check   if the blog is already exists
-  
+    // 1. Handle File Upload (Middleware should have processed this)
+    let imageUrl = "";
+    let imagePublicId = "";
 
-    
-    const newHome = new FoodGaller({
-      
-      image,
+    if (req.file) {
+      imageUrl = req.file.path;
+      imagePublicId = req.file.filename;
+    } else {
+      return next(createError.BadRequest("Please upload a valid image file."));
+    }
+
+    // 2. Create the Gallery Entry
+    const newEntry = await FoodGallery.create({
+      image: imageUrl,
+      imagePublicId,
+      caption: req.body.caption || "ChefKart Special" // Optional caption support
     });
-    await newHome.save();
 
     res.status(201).json({
-      message: "Food Page is successfully created",
-      
+      status: "success",
+      message: "Gallery image uploaded successfully",
+      data: newEntry,
     });
   } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({
-      message: "Internal server error",
-    });
+    next(error);
   }
 };
 
-// get all blog posts
-const getallFood = async (req, res) => {
+/**
+ * @desc    Retrieve all food gallery images
+ * @route   GET /api/v1/food-gallery/all
+ * @access  Public
+ */
+export const getallFood = async (req, res, next) => {
   try {
-    const Homes = await FoodGaller.find();
-
- 
-    
-    res.status(200).json(Homes); // Corrected from "blog" to "blogs"
-  } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({
-      message: "Internal server error",
-    });
-  }
-};
-
-
-//getting a single blog
-
-
-
-// update all blogs
-
-// delete a blog post by id
-
-const deleteFood = async (req, res) => {
-  try {
-    const { id } = req.params;
- 
-
-    // Validate if ID is a valid MongoDB ObjectId
-    if (!id.match(/^[0-9a-fA-F]{24}$/)) {
-      return res.status(400).json({ message: "Invalid blog ID format" });
-    }
-
-   
-
-    // Delete the blog
-    const deletedFood = await FoodGaller.findByIdAndDelete(id);
+    // Sort by most recent uploads
+    const images = await FoodGallery.find().sort({ createdAt: -1 });
 
     res.status(200).json({
-      message: "Food successfully deleted",
-      deletedFood,
+      status: "success",
+      results: images.length,
+      data: images,
     });
   } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({
-      message: "Internal server error",
-    });
+    next(error);
   }
 };
 
+/**
+ * @desc    Delete a food image from DB and Cloudinary
+ * @route   DELETE /api/v1/food-gallery/:id
+ * @access  Private (Admin)
+ */
+export const deleteFood = async (req, res, next) => {
+  try {
+    const { id } = req.params;
 
+    // 1. Check if record exists
+    const record = await FoodGallery.findById(id);
+    if (!record) {
+      return next(createError.NotFound("Image record not found."));
+    }
 
-module.exports={
-    createFood ,
-    getallFood,
-    deleteFood 
+    // 2. Storage Cleanup: Remove from Cloudinary
+    if (record.imagePublicId) {
+      await cloudinary.uploader.destroy(record.imagePublicId);
+    }
+
+    // 3. Remove from Database
+    await FoodGallery.findByIdAndDelete(id);
+
+    res.status(200).json({
+      status: "success",
+      message: "Image successfully removed from both gallery and cloud storage.",
+    });
+  } catch (error) {
+    next(error);
+  }
 };
