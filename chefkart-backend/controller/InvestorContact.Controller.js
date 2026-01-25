@@ -1,64 +1,82 @@
-const { cloudinary } = require("../config/cloudinary");
+import InvestorContact from "../models/InvestorContact.model.js";
+import createError from "http-errors";
 
-const InvestorContact=require("../models/InvestorContact.Model")
-//create a new blog post with the provided data
-
-const createInvestContact = async (req, res) => {
-    try {
-      const { fullname,email,city,message } = req.body;
-  
-      // Check if contact already exists using Email
-      const existingData = await InvestorContact.findOne({ email });
-  
-      if (existingData) {
-        return res.status(400).json({ message: "This InvestorContact already exists" });
-      }
-  
-      const newInvestor = new InvestorContact({
-        fullname,
-        email,
-        city,
-        message,
-      });
-  
-      await newInvestor.save();
-  
-      res.status(201).json({
-        message: "InvestorContact is successfully created",
-      });
-    } catch (error) {
-      console.error("Error:", error);
-      res.status(500).json({
-        message: "Internal server error",
-      });
-    }
-  };
-  
-
-
-const getallInvestorContact = async (req, res) => {
+/**
+ * @desc    Submit a new investor inquiry
+ * @route   POST /api/v1/investor-contact/create
+ * @access  Public
+ */
+export const createInvestContact = async (req, res, next) => {
   try {
-    const Investors = await InvestorContact.find();
+    const { fullname, email, city, message } = req.body;
 
-    if (!Investors.length) {
-      return res.status(404).json({ message: "No Investor posts found" });
+    // 1. Validation
+    if (!fullname || !email || !city || !message) {
+      return next(createError.BadRequest("All fields are required."));
     }
-    
-    res.status(200).json(Investors ); // Corrected from "blog" to "blogs"
-  } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({
-      message: "Internal server error",
+
+    // 2. Check for existing inquiry using Email
+    const existingInquiry = await InvestorContact.findOne({ email });
+    if (existingInquiry) {
+      return next(createError.Conflict("We have already received an inquiry from this email address."));
+    }
+
+    // 3. Save to Database (Using .create for cleaner code)
+    const newInquiry = await InvestorContact.create({
+      fullname,
+      email,
+      city,
+      message,
     });
+
+    res.status(201).json({
+      status: "success",
+      message: "Investor inquiry submitted successfully",
+      data: newInquiry,
+    });
+  } catch (error) {
+    next(error); // Passes MongoDB validation errors (like invalid email) to global handler
   }
 };
 
+/**
+ * @desc    Get all investor inquiries
+ * @route   GET /api/v1/investor-contact/all
+ * @access  Private (Admin Only)
+ */
+export const getallInvestorContact = async (req, res, next) => {
+  try {
+    // Sort by newest first so admins see the latest inquiries at the top
+    const inquiries = await InvestorContact.find().sort({ createdAt: -1 });
 
+    res.status(200).json({
+      status: "success",
+      results: inquiries.length,
+      data: inquiries,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
+/**
+ * @desc    Delete an inquiry
+ * @route   DELETE /api/v1/investor-contact/:id
+ * @access  Private (Admin Only)
+ */
+export const deleteInquiry = async (req, res, next) => {
+  try {
+    const inquiry = await InvestorContact.findByIdAndDelete(req.params.id);
 
+    if (!inquiry) {
+      return next(createError.NotFound("Inquiry not found."));
+    }
 
-module.exports={
-    createInvestContact,
-    getallInvestorContact
-   
+    res.status(200).json({
+      status: "success",
+      message: "Inquiry record deleted successfully."
+    });
+  } catch (error) {
+    next(error);
+  }
 };

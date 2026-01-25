@@ -1,148 +1,150 @@
-const { cloudinary } = require("../config/cloudinary");
-const Investor = require("../models/Investor.Model");
+import Investor from "../models/Investor.model.js";
+import { cloudinary } from "../config/cloudinary.js";
+import createError from "http-errors";
 
-//create a new blog post with the provided data
-
-const createInvestor = async (req, res) => {
+/**
+ * @desc    Create new investor content
+ * @route   POST /api/v1/investor/create
+ * @access  Private (Admin)
+ */
+export const createInvestor = async (req, res, next) => {
   try {
-    const { title, subtitle,  description,image } = req.body;
- 
-    // check   if the blog is already exists
-    const existingData=await Investor.findOne({title})
+    const { title, subtitle, description } = req.body;
 
-    if(existingData){
-      return res.status(400).json({message:"This blog already exists"})
+    // 1. Validation
+    if (!title || !description) {
+      return next(createError.BadRequest("Title and description are required."));
     }
 
-    
-    const newBlog = new Investor({
-        title, subtitle,  description,image 
+    // 2. Check existence
+    const existingData = await Investor.findOne({ title });
+    if (existingData) {
+      return next(createError.Conflict("Content with this title already exists."));
+    }
+
+    // 3. Handle Image (processed via Multer middleware)
+    let imageUrl = "";
+    let imagePublicId = "";
+
+    if (req.file) {
+      imageUrl = req.file.path;
+      imagePublicId = req.file.filename;
+    }
+
+    // 4. Save to DB
+    const newInvestor = await Investor.create({
+      title,
+      subtitle,
+      description,
+      image: imageUrl,
+      imagePublicId
     });
-    await newBlog.save();
 
     res.status(201).json({
-      message: "Investor is successfully created",
-      
+      status: "success",
+      message: "Investor content created successfully",
+      data: newInvestor,
     });
   } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({
-      message: "Internal server error",
-    });
+    next(error);
   }
 };
 
-
-const getallInvestor = async (req, res) => {
+/**
+ * @desc    Get all investor content
+ * @route   GET /api/v1/investor/all
+ */
+export const getallInvestor = async (req, res, next) => {
   try {
-    const Investors = await Investor.find();
-
-    if (!Investors.length) {
-      return res.status(404).json({ message: "No Investor posts found" });
-    }
-    
-    res.status(200).json(Investors ); // Corrected from "blog" to "blogs"
-  } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({
-      message: "Internal server error",
-    });
-  }
-};
-
-
-//getting a single blog
-const getInvestorById = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const Investors = await Investor.findById(id); // Changed "blogs" to "blog"
-
-    if (!Investors ) {
-      return res.status(404).json({ message: "Investor  not found" });
-    }
-    res.status(200).json(Investors); // Now correctly returning "blog"
-  } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({
-      message: "Internal server error",
-    });
-  }
-};
-
-
-// update all blogs
-const updateInvestor = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { title, subtitle,  description,image } = req.body;
-    let imageUrl = "";
-    //image uploading process
-    if (image) {
-      const result = await cloudinary.uploader.upload(image, {
-        folder: "blogs",
-      });
-      imageUrl = result.secure_url;
-    }
-    const updateinvestors = await Investor.findByIdAndUpdate(
-      id,
-      {
-        title, subtitle,  description, 
-        image: imageUrl,
-      },
-      { new: true }
-    );
-
-    if (!updateinvestors) {
-      return res.status(404).json({ message: "Investor not found" });
-    }
+    const investors = await Investor.find().sort({ createdAt: -1 });
 
     res.status(200).json({
-      message: "Investor is successfully updated successfully",
-      updateInvestor,
+      status: "success",
+      results: investors.length,
+      data: investors,
     });
   } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({
-      message: "Internal server error",
-    });
+    next(error);
   }
 };
 
-// // delete a blog post by id
-
-const deleteInvestor = async (req, res) => {
+/**
+ * @desc    Get single investor post
+ * @route   GET /api/v1/investor/:id
+ */
+export const getInvestorById = async (req, res, next) => {
   try {
-    const { id } = req.params;
- 
-
-    // Validate if ID is a valid MongoDB ObjectId
-    if (!id.match(/^[0-9a-fA-F]{24}$/)) {
-      return res.status(400).json({ message: "Invalid blog ID format" });
-    }
-
-
-    // Delete the blog
-    const deleteInvestors = await Blog.findByIdAndDelete(id);
+    const investor = await Investor.findById(req.params.id);
+    if (!investor) return next(createError.NotFound("Content not found."));
 
     res.status(200).json({
-      message: "Investor successfully deleted",
-      deleteInvestors,
+      status: "success",
+      data: investor,
     });
   } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({
-      message: "Internal server error",
-    });
+    next(error);
   }
 };
 
+/**
+ * @desc    Update investor content
+ * @route   PATCH /api/v1/investor/:id
+ */
+export const updateInvestor = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const investor = await Investor.findById(id);
 
+    if (!investor) return next(createError.NotFound("Investor content not found."));
 
-module.exports={
-    createInvestor,
-    getallInvestor,
-    getInvestorById,
-    updateInvestor,
-    deleteInvestor
+    let updateData = { ...req.body };
+
+    // Handle Image Replacement
+    if (req.file) {
+      // Delete old image from Cloudinary to keep storage clean
+      if (investor.imagePublicId) {
+        await cloudinary.uploader.destroy(investor.imagePublicId);
+      }
+      updateData.image = req.file.path;
+      updateData.imagePublicId = req.file.filename;
+    }
+
+    const updatedInvestor = await Investor.findByIdAndUpdate(id, updateData, {
+      new: true,
+      runValidators: true,
+    });
+
+    res.status(200).json({
+      status: "success",
+      message: "Investor content updated successfully",
+      data: updatedInvestor,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Delete investor content and clean storage
+ * @route   DELETE /api/v1/investor/:id
+ */
+export const deleteInvestor = async (req, res, next) => {
+  try {
+    const investor = await Investor.findById(req.params.id);
+    if (!investor) return next(createError.NotFound("Content not found."));
+
+    // Cleanup Cloudinary storage
+    if (investor.imagePublicId) {
+      await cloudinary.uploader.destroy(investor.imagePublicId);
+    }
+
+    await Investor.findByIdAndDelete(req.params.id);
+
+    res.status(200).json({
+      status: "success",
+      message: "Investor content deleted successfully.",
+    });
+  } catch (error) {
+    next(error);
+  }
 };
