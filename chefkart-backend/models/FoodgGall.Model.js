@@ -1,17 +1,33 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
-const FoodGallerSchema = new mongoose.Schema({
-    
- 
-    image: { type: String },
-     // Field to store the image URL or path
-    updatedAt: { type: Date, default: Date.now }
-});
+const foodGallerySchema = new mongoose.Schema(
+    {
+        image: {
+            type: String,
+            required: [true, 'Image URL is required']
+        },
+        imagePublicId: {
+            type: String,
+            required: [true, 'Cloudinary Public ID is required for storage management']
+        },
+        caption: {
+            type: String,
+            trim: true,
+            maxlength: [200, 'Caption cannot exceed 200 characters']
+        },
+        uploadedBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User', // Links the photo to the user who uploaded it
+            required: false
+        }
+    },
+    {
+        // Replaces manual 'updatedAt' logic with native performance
+        timestamps: true
+    }
+);
 
-// Middleware to update the updatedAt field before saving
-FoodGallerSchema.pre('save', function(next) {
-    this.updatedAt = Date.now();
-    next();
-});
+// Fixed the naming from 'FoodGaller' to 'FoodGallery'
+const FoodGallery = mongoose.model('FoodGallery', foodGallerySchema);
 
-module.exports = mongoose.model('FoodGaller', FoodGallerSchema);
+export default FoodGallery;
