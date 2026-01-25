@@ -1,118 +1,157 @@
-const Booking=require('../models/Booking.Model');
+import Booking from '../models/Booking.Model.js';
+import createError from 'http-errors';
 
-
-// create bOoking 
-
-const createBooking = async (req, res) => {
+/**
+ * @desc    Create a new booking
+ * @route   POST /api/v1/booking/create
+ * @access  Private (Authenticated User)
+ */
+export const createBooking = async (req, res, next) => {
     try {
-        // Ensure the user is authenticated
-        if (!req.user || !req.user.userId) {
-            return res.status(403).json({ message: "Unauthorized: Invalid token" });
+        // 1. Auth Check (Middlewares should handle this, but extra safety is good)
+        if (!req.user || !req.user.id) {
+            return next(createError.Unauthorized('You must be logged in to book a chef.'));
         }
 
-        const { chef, bookingDate, status, notes } = req.body;
+        const { chef, bookingDate, notes } = req.body;
 
-        // Create a new booking
-        const newBooking = new Booking({
-            user: req.user.userId,  // Use authenticated user's ID
+        // 2. Simple Validation
+        if (!chef || !bookingDate) {
+            return next(createError.BadRequest('Chef ID and Booking Date are required.'));
+        }
+
+        // 3. Create Booking
+        const newBooking = await Booking.create({
+            user: req.user.id, // ID from the decoded JWT token
             chef,
             bookingDate,
-            status,
-            notes
+            notes,
+            status: 'pending' // Default status for new bookings
         });
 
-        await newBooking.save();
-
         res.status(201).json({
+            status: 'success',
             message: "Booking created successfully",
-            booking: newBooking
+            data: newBooking
         });
 
     } catch (error) {
-        console.error("❌ Booking Error:", error);
-        res.status(500).json({ message: "Internal server error", error: error.message });
+        next(error);
     }
 };
 
-
-const getBookings = async(req,res)=>{
-     try{
-        const Bookings=await Booking.find();
-
-        res.status(200).json({
-            message:"Booking fetched successfully",
-            data:Bookings
-        })
-     }
-     catch(error){
-         console.error(error);
-         res.status(500).json({message:"Internal server error"});
-     }
-}
-
-// we need a single booking
-const getBookingById=async(req,res)=>{
-     try{
-        
-        const {id}=req.params;
-         const Bookings=await Booking.findById(id);
-         if(!Booking){
-            return res.status(404).json({message:"Booking not found"});
-         }
-
-         res.status(200).json({
-            message:"Booking fetched successfully",
-            data:Bookings
-         })
-     }
-     catch(error){
-        console.error("Error:",error);
-         res.status(500).json({message:"Internal server error"});
-     }
-}
-
-
-const updateBooking =async(req,res)=>{
-    try{
-         const {id}=req.params;
-         const{chef, bookingDate, status, notes } =req.body;
-
-         const updatedBooking=await Booking.findByIdAndUpdate(id,{
-            chef,bookingDate,status,notes
-         },
-        {new:tru});
-
-        res.status(200).json({
-            message:"Booking updated Successfully",
-            data:updatedBooking
-        })
-
-    }
-    catch(error){
-        console.error("Error:",error);
-        res.status(500).json({
-            message: "Internal server error",
-          });
-    }
-}
-
-
-
-const deleteBooking = async (req, res) => {
+/**
+ * @desc    Get all bookings (Admin can see all, Users see theirs)
+ * @route   GET /api/v1/booking/all
+ * @access  Private
+ */
+export const getBookings = async (req, res, next) => {
     try {
-      const bookings=await Booking.deleteMany();
-     
-  
-      res.status(200).json({
-        message: "Booking  deleted successfully",
-      data: bookings
-      });
-    } catch (error) {
-      console.error("Error:", error);
-      res.status(500).json({ message: "Internal server error" });
-    }
-  };
+        // If user is admin, fetch all. If not, fetch only their own bookings.
+        const query = req.user.role === 'admin' ? {} : { user: req.user.id };
 
-module.exports={createBooking,getBookings,getBookingById,updateBooking ,
-    deleteBooking  
+        const bookings = await Booking.find(query)
+            .populate('chef', 'name profilepic area') // Get specific chef details
+            .populate('user', 'name email')           // Get specific user details
+            .sort({ createdAt: -1 });
+
+        res.status(200).json({
+            status: 'success',
+            results: bookings.length,
+            data: bookings
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * @desc    Get single booking by ID
+ * @route   GET /api/v1/booking/:id
+ */
+export const getBookingById = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+
+        const booking = await Booking.findById(id)
+            .populate('chef', 'name profilepic phone')
+            .populate('user', 'name email phone');
+
+        if (!booking) {
+            return next(createError.NotFound('Booking not found.'));
+        }
+
+        // Security: Only the owner or an admin can view this specific booking
+        if (booking.user._id.toString() !== req.user.id && req.user.role !== 'admin') {
+            return next(createError.Forbidden('You are not authorized to view this booking.'));
+        }
+
+        res.status(200).json({
+            status: 'success',
+            data: booking
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * @desc    Update booking status or details
+ * @route   PATCH /api/v1/booking/:id
+ */
+export const updateBooking = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const { status, bookingDate, notes } = req.body;
+
+        // We use findByIdAndUpdate with runValidators to ensure enum values (like status) are correct
+        const updatedBooking = await Booking.findByIdAndUpdate(
+            id,
+            { status, bookingDate, notes },
+            { new: true, runValidators: true }
+        );
+
+        if (!updatedBooking) {
+            return next(createError.NotFound('Booking not found.'));
+        }
+
+        res.status(200).json({
+            status: 'success',
+            message: "Booking updated successfully",
+            data: updatedBooking
+        });
+
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * @desc    Delete a booking
+ * @route   DELETE /api/v1/booking/:id
+ */
+export const deleteBooking = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+
+        const booking = await Booking.findById(id);
+
+        if (!booking) {
+            return next(createError.NotFound('Booking not found.'));
+        }
+
+        // Security: Users can only delete their own pending bookings
+        if (booking.status !== 'pending' && req.user.role !== 'admin') {
+            return next(createError.BadRequest('Confirmed bookings cannot be deleted. Please contact support.'));
+        }
+
+        await Booking.findByIdAndDelete(id);
+
+        res.status(200).json({
+            status: 'success',
+            message: "Booking deleted successfully"
+        });
+    } catch (error) {
+        next(error);
+    }
 };

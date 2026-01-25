@@ -1,161 +1,193 @@
-const { cloudinary } = require("../config/cloudinary");
-const Blog = require("../models/Blog.Model");
+import Blog from '../models/Blog.Model.js';
+import { cloudinary } from '../config/cloudinary.js';
 
-//create a new blog post with the provided data
-
-const createBlog = async (req, res) => {
+/**
+ * @desc    Create a new blog post
+ * @route   POST /api/v1/blog/create
+ * @access  Private (Admin)
+ */
+export const createBlog = async (req, res, next) => {
   try {
-    const { title, content, category, image } = req.body;
-    /// validation process
-    if (!title || !content || !category || !image) {
-      return res.status(400).json({ message: "Please fill in all fields" });
-    }
-    // check   if the blog is already exists
-    const existingData=await Blog.findOne({title})
+    const { title, content, category } = req.body;
 
-    if(existingData){
-      return res.status(400).json({message:"This blog already exists"})
+    // 1. Validation
+    if (!title || !content || !category) {
+      return res.status(400).json({
+        status: 'fail',
+        message: 'Please provide title, content, and category.'
+      });
     }
 
-    
-    const newBlog = new Blog({
+    // 2. Check Duplicates
+    const existingBlog = await Blog.findOne({ title });
+    if (existingBlog) {
+      return res.status(409).json({
+        status: 'fail',
+        message: 'A blog with this title already exists.'
+      });
+    }
+
+    // 3. Handle Image Upload (Multer Middleware puts file in req.file)
+    let imageUrl = '';
+    let imagePublicId = '';
+
+    if (req.file) {
+      // The file is ALREADY uploaded to Cloudinary by the route middleware
+      imageUrl = req.file.path;
+      imagePublicId = req.file.filename; // We save this to delete it later if needed
+    } else {
+      return res.status(400).json({
+        status: 'fail',
+        message: 'Blog image is required.'
+      });
+    }
+
+    // 4. Create Blog
+    const newBlog = await Blog.create({
       title,
       content,
       category,
-      image,
+      image: imageUrl,
+      imagePublicId, // Store this so we can delete the image from Cloudinary later
     });
-    await newBlog.save();
 
     res.status(201).json({
-      message: "Blog is successfully created",
-      
+      status: 'success',
+      message: 'Blog created successfully',
+      data: newBlog,
     });
   } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({
-      message: "Internal server error",
-    });
+    next(error); // Pass to global error handler
   }
 };
 
-// get all blog posts
-const getallBlogs = async (req, res) => {
+/**
+ * @desc    Get all blogs
+ * @route   GET /api/v1/blog/getall
+ * @access  Public
+ */
+export const getAllBlogs = async (req, res, next) => {
   try {
-    const blogs = await Blog.find();
+    // Optional: Add pagination later (page, limit)
+    const blogs = await Blog.find().sort({ createdAt: -1 }); // Newest first
 
-    if (!blogs.length) {
-      return res.status(404).json({ message: "No blog posts found" });
-    }
-    
-    res.status(200).json(blogs); // Corrected from "blog" to "blogs"
-  } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({
-      message: "Internal server error",
+    res.status(200).json({
+      status: 'success',
+      results: blogs.length,
+      data: blogs,
     });
+  } catch (error) {
+    next(error);
   }
 };
 
-
-//getting a single blog
-const getBlogById = async (req, res) => {
+/**
+ * @desc    Get single blog
+ * @route   GET /api/v1/blog/get/:id
+ * @access  Public
+ */
+export const getBlogById = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    const blog = await Blog.findById(id); // Changed "blogs" to "blog"
+    const blog = await Blog.findById(id);
 
     if (!blog) {
-      return res.status(404).json({ message: "Blog not found" });
-    }
-    res.status(200).json(blog); // Now correctly returning "blog"
-  } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({
-      message: "Internal server error",
-    });
-  }
-};
-
-
-// update all blogs
-const updateBlog = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { title, content, category, image } = req.body;
-    let imageUrl = "";
-    //image uploading process
-    if (image) {
-      const result = await cloudinary.uploader.upload(image, {
-        folder: "blogs",
+      return res.status(404).json({
+        status: 'fail',
+        message: 'Blog post not found.'
       });
-      imageUrl = result.secure_url;
-    }
-    const updateBlogs = await Blog.findByIdAndUpdate(
-      id,
-      {
-        title,
-        content,
-        category,
-        image: imageUrl,
-      },
-      { new: true }
-    );
-
-    if (!updateBlogs) {
-      return res.status(404).json({ message: "Blog not found" });
     }
 
     res.status(200).json({
-      message: "Blog  is successfully updated successfully",
-      updateBlogs,
+      status: 'success',
+      data: blog,
     });
   } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({
-      message: "Internal server error",
-    });
+    next(error);
   }
 };
 
-// delete a blog post by id
-
-const deleteBlog = async (req, res) => {
+/**
+ * @desc    Update a blog
+ * @route   PUT /api/v1/blog/update/:id
+ * @access  Private (Admin)
+ */
+export const updateBlog = async (req, res, next) => {
   try {
     const { id } = req.params;
- 
+    const { title, content, category } = req.body;
 
-    // Validate if ID is a valid MongoDB ObjectId
-    if (!id.match(/^[0-9a-fA-F]{24}$/)) {
-      return res.status(400).json({ message: "Invalid blog ID format" });
+    // 1. Find existing blog
+    const blog = await Blog.findById(id);
+    if (!blog) {
+      return res.status(404).json({
+        status: 'fail',
+        message: 'Blog post not found.'
+      });
     }
 
-    // Check if the blog exists before deletion
-    const existingBlog = await Blog.findById(id);
-    if (!existingBlog) {
-      return res.status(404).json({ message: "Blog not found" });
+    // 2. Prepare Update Object
+    const updateData = { title, content, category };
+
+    // 3. Handle Image Update (If new file uploaded)
+    if (req.file) {
+      // OPTIONAL: Delete old image from Cloudinary to save space
+      if (blog.imagePublicId) {
+        await cloudinary.uploader.destroy(blog.imagePublicId);
+      }
+
+      updateData.image = req.file.path;
+      updateData.imagePublicId = req.file.filename;
     }
 
-    // Delete the blog
-    const deletedBlog = await Blog.findByIdAndDelete(id);
+    // 4. Update
+    const updatedBlog = await Blog.findByIdAndUpdate(id, updateData, {
+      new: true,
+      runValidators: true,
+    });
 
     res.status(200).json({
-      message: "Blog successfully deleted",
-      deletedBlog,
+      status: 'success',
+      message: 'Blog updated successfully',
+      data: updatedBlog,
     });
   } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({
-      message: "Internal server error",
-    });
+    next(error);
   }
 };
 
+/**
+ * @desc    Delete a blog
+ * @route   DELETE /api/v1/blog/delete/:id
+ * @access  Private (Admin)
+ */
+export const deleteBlog = async (req, res, next) => {
+  try {
+    const { id } = req.params;
 
+    const blog = await Blog.findById(id);
 
-module.exports={
-    createBlog,
-    getallBlogs,
-    getBlogById,
-    updateBlog,
-    deleteBlog
+    if (!blog) {
+      return res.status(404).json({
+        status: 'fail',
+        message: 'Blog post not found.'
+      });
+    }
+
+    // 1. Delete Image from Cloudinary (Clean up storage)
+    if (blog.imagePublicId) {
+      await cloudinary.uploader.destroy(blog.imagePublicId);
+    }
+
+    // 2. Delete from DB
+    await Blog.findByIdAndDelete(id);
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Blog deleted successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
 };
