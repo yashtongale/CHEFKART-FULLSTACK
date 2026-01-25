@@ -2,25 +2,25 @@ import { createBrowserRouter, RouterProvider, Outlet } from "react-router-dom";
 import { Suspense, lazy } from "react";
 
 // Standard Components
-import NotificationBanner from "./Components/Header/Head";
-import Navbar from "./Components/Header/Navbar";
-import Footer from "./Components/Footer/Footer";
-import ChefDirectory from "./Components/ChefSearch";
-import ChefDetails from "./Components/ChefDetailsPage";
-import ChefFormFormik from "./Components/ChefRegistration/Register";
+import NotificationBanner from "./components/Header/Head";
+import Navbar from "./components/Header/Navbar";
+import Footer from "./components/Footer/Footer";
+import ChefDirectory from "./components/ChefSearch";
+import ChefDetails from "./components/ChefDetailsPage";
+import ChefFormFormik from "./components/ChefRegistration/Register.jsx";
 
 // Lazy Loaded Components
-const Hom = lazy(() => import("./Components/home/Hom"));
-const About = lazy(() => import("./Components/About/About"));
-const Contact = lazy(() => import("./Components/Contact/Contact"));
-const ChefConnection = lazy(() => import("./Components/ChefConection/ChefConnection"));
-const Month = lazy(() => import("./Components/CookForAmonth/Month"));
-const OneTime = lazy(() => import("./Components/OneTimeCook/OneTime"));
-const Chef = lazy(() => import("./Components/Chefforparty/Chef"));
-const Testi = lazy(() => import("./Components/Testimonial/Testi"));
-const Career = lazy(() => import("./Components/Career/CareerEmptyState"));
-const Blog = lazy(() => import("./Components/Blog/Blog"));
-const Investor = lazy(() => import("./Components/Investor/Invest"));
+const Hom = lazy(() => import("./components/home/Hom"));
+const About = lazy(() => import("./components/About/About"));
+const Contact = lazy(() => import("./components/Contact/Contact"));
+const ChefConnection = lazy(() => import("./components/ChefConection/ChefConnection"));
+const Month = lazy(() => import("./components/CookForAmonth/Month"));
+const OneTime = lazy(() => import("./components/OneTimeCook/OneTime"));
+const Chef = lazy(() => import("./components/Chefforparty/Chef"));
+const Testi = lazy(() => import("./components/Testimonial/Testi"));
+const Career = lazy(() => import("./components/Career/CareerEmptyState"));
+const Blog = lazy(() => import("./components/Blog/Blog"));
+const Investor = lazy(() => import("./components/Investor/Invest"));
 
 // 1. Create a "Layout" component
 // This renders the consistent parts of your page (Nav, Footer) once,
