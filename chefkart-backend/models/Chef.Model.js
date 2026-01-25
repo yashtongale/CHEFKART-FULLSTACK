@@ -1,42 +1,73 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
-const ChefSchema = new mongoose.Schema({
-    name: { type: String, required: true },
-    Address: { type: String, required: true },
-    profilepic: { type: String },
-    default_cook_image: { type: String },
-    city: { type: String, required: true },
-    state: { type: String, required: true },
-    area: { type: String, required: true },
-    country: { type: String, required: true },
-    pincode: { type: String, required: true },
-    email: { type: String, required: true },
-    phone: { type: String, required: true },
-    experience: { type: String, required: true },
-    verified: { type: Boolean, default: false },
-    starRating: { type: Number, default: 0 },
-    totalRatings: { type: Number, default: 0 },
-    language: [{ type: String }], // e.g., ["Hin"]
-    veg: { type: Boolean, default: false },
-    nonVeg: { type: Boolean, default: false },
-    aboutCook: { type: String },
-    cuisineRatings: [{
-        cuisine: { type: String },
-        rating: { type: Number }
-    }],
-    availableLocations: [{ type: String }], // e.g., ["Emerald Hills(Coral), Sector 65, Gurgaon"]
-    availability: [{
-        start: { type: String }, // "05:00 AM"
-        end: { type: String }    // "12:30 PM"
-    }],
-    housesServed: { type: Number, default: 0 },
-    updatedAt: { type: Date, default: Date.now }
-});
+const chefSchema = new mongoose.Schema(
+    {
+        name: {
+            type: String,
+            required: [true, 'Chef name is required'],
+            trim: true
+        },
+        email: {
+            type: String,
+            required: [true, 'Email is required'],
+            unique: true,
+            lowercase: true
+        },
+        phone: {
+            type: String,
+            required: [true, 'Phone number is required']
+        },
+        address: { type: String, required: true },
+        city: { type: String, required: true, index: true }, // Indexed for faster search
+        state: { type: String, required: true },
+        area: { type: String, required: true },
+        country: { type: String, required: true, default: 'India' },
+        pincode: { type: String, required: true },
 
-// Middleware to update the updatedAt field before saving
-ChefSchema.pre('save', function(next) {
-    this.updatedAt = Date.now();
-    next();
-});
+        // Image Handling
+        profilePic: { type: String },
+        profilePicPublicId: { type: String }, // For Cloudinary cleanup
+        defaultCookImage: { type: String },
 
-module.exports = mongoose.model('Chef', ChefSchema);
+        experience: { type: String, required: true },
+        verified: { type: Boolean, default: false },
+        aboutCook: { type: String, trim: true },
+        housesServed: { type: Number, default: 0 },
+
+        // Preferences & Skills
+        veg: { type: Boolean, default: false },
+        nonVeg: { type: Boolean, default: false },
+        languages: [{ type: String }],
+
+        // Ratings System
+        starRating: { type: Number, default: 0, min: 0, max: 5 },
+        totalRatings: { type: Number, default: 0 },
+        cuisineRatings: [
+            {
+                cuisine: { type: String },
+                rating: { type: Number, default: 0 }
+            }
+        ],
+
+        // Availability
+        availableLocations: [{ type: String }],
+        availability: [
+            {
+                start: { type: String }, // "05:00 AM"
+                end: { type: String }    // "12:30 PM"
+            }
+        ],
+        isActive: { type: Boolean, default: true }
+    },
+    {
+        // Native Mongoose timestamps: Automatically manages 'createdAt' and 'updatedAt'
+        timestamps: true
+    }
+);
+
+// Performance: Indexing common search patterns
+chefSchema.index({ city: 1, veg: 1, nonVeg: 1 });
+
+const Chef = mongoose.model('Chef', chefSchema);
+
+export default Chef;

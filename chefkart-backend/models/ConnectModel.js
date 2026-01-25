@@ -1,17 +1,41 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
-const ConnectSchema = new mongoose.Schema({
-    title: { type: String, required: true },
-    content: { type: String, required: true },
-    image: { type: String },
-     // Field to store the image URL or path
-    updatedAt: { type: Date, default: Date.now }
-});
+const connectSchema = new mongoose.Schema(
+    {
+        title: {
+            type: String,
+            required: [true, 'Title is required'],
+            trim: true
+        },
+        content: {
+            type: String,
+            required: [true, 'Content description is required'],
+            trim: true
+        },
+        link: {
+            type: String,
+            trim: true,
+            default: '#' // Useful for social media links or CTA buttons
+        },
+        image: {
+            type: String,
+            required: [true, 'An image URL is required for this section']
+        },
+        imagePublicId: {
+            type: String,
+            required: [true, 'Cloudinary Public ID is required for storage cleanup']
+        },
+        isActive: {
+            type: Boolean,
+            default: true
+        }
+    },
+    {
+        // Native Mongoose timestamps: Automatically manages 'createdAt' and 'updatedAt'
+        timestamps: true
+    }
+);
 
-// Middleware to update the updatedAt field before saving
-ConnectSchema.pre('save', function(next) {
-    this.updatedAt = Date.now();
-    next();
-});
+const Connect = mongoose.model('Connect', connectSchema);
 
-module.exports = mongoose.model('Connect', ConnectSchema);
+export default Connect;
