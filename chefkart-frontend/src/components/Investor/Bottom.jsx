@@ -1,20 +1,67 @@
-import React from 'react';
+import React from "react";
+import { motion } from "framer-motion";
+import { FaRocket, FaStar } from "react-icons/fa";
 
 const AnnouncementBanner = () => {
   return (
-    <div className="bg-orange-500 text-white text-center py-8">
-      <div className="relative max-w-screen-lg h-auto mx-auto px-4 lg:px-8">
-        {/* Decorative Arcs */}
-        <div className="absolute top-0 left-0 w-16 h-16 md:w-20 md:h-20 border-t-4 border-l-4 border-white rounded-full"></div>
-        <div className="absolute top-0 right-0 w-16 h-16 md:w-20 md:h-20 border-t-4 border-r-4 border-white rounded-full"></div>
+    <section className="relative bg-gradient-to-r from-orange-500 to-red-600 py-16 overflow-hidden">
+
+      {/* Decorative Background Pattern (White Dots) */}
+      <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "radial-gradient(#fff 2px, transparent 2px)", backgroundSize: "30px 30px" }}></div>
+
+      {/* Floating Stars (Decorative) */}
+      <motion.div
+        animate={{ opacity: [0.3, 1, 0.3], scale: [1, 1.2, 1] }}
+        transition={{ duration: 3, repeat: Infinity }}
+        className="absolute top-10 left-[10%] text-white text-xl opacity-30"
+      >
+        <FaStar />
+      </motion.div>
+      <motion.div
+        animate={{ opacity: [0.3, 1, 0.3], scale: [1, 1.5, 1] }}
+        transition={{ duration: 4, repeat: Infinity, delay: 1 }}
+        className="absolute bottom-10 right-[10%] text-white text-2xl opacity-30"
+      >
+        <FaStar />
+      </motion.div>
+
+      <div className="container mx-auto px-6 relative z-10 text-center">
+
+        {/* Animated Icon */}
+        <motion.div
+          initial={{ scale: 0, rotate: -45 }}
+          whileInView={{ scale: 1, rotate: 0 }}
+          viewport={{ once: true }}
+          whileHover={{ rotate: [0, -10, 10, 0], scale: 1.1 }}
+          transition={{ type: "spring", stiffness: 200, damping: 10 }}
+          className="w-20 h-20 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center mx-auto mb-6 text-white text-4xl shadow-lg border border-white/30 cursor-pointer"
+        >
+          <FaRocket />
+        </motion.div>
 
         {/* Text Content */}
-        <p className="text-2xl md:text-4xl lg:text-5xl font-bold mt-5 md:mt-8">
-          This is just the beginning with many <br className="hidden md:block" /> 
-          more milestones & funding to come.
-        </p>
+        <motion.h2
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.2 }}
+          className="text-3xl md:text-5xl font-extrabold text-white leading-tight tracking-tight"
+        >
+          This is just the <span className="text-yellow-300">beginning</span>.
+        </motion.h2>
+
+        <motion.p
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.4 }}
+          className="text-orange-100 text-lg md:text-xl mt-4 font-medium max-w-2xl mx-auto"
+        >
+          With many more milestones & funding rounds yet to come, we are building the future of home cooking together.
+        </motion.p>
+
       </div>
-    </div>
+    </section>
   );
 };
 

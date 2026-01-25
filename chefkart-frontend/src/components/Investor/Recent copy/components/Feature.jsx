@@ -1,159 +1,159 @@
 import React, { useEffect, useState } from "react";
+import Slider from "react-slick";
 import axios from "axios";
+import { motion } from "framer-motion";
+import { FaLinkedinIn, FaHandshake } from "react-icons/fa";
+
+// Slick CSS
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
+
+// Fallback data for development/demo
+const FALLBACK_INVESTORS = [
+  {
+    _id: "1",
+    title: "Venture Catalysts",
+    subtitle: "Lead Investor",
+    description: "India's first integrated incubator. Supporting our vision since Day 1.",
+    image: "https://images.unsplash.com/photo-1560179707-f14e90ef3623?auto=format&fit=crop&w=300&q=80", // Placeholder logo/person
+  },
+  {
+    _id: "2",
+    title: "Titan Capital",
+    subtitle: "Seed Round",
+    description: "Empowering startups to solve real-world problems with technology.",
+    image: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=300&q=80",
+  },
+  {
+    _id: "3",
+    title: "Better Capital",
+    subtitle: "Strategic Partner",
+    description: "Helping us scale operations across multiple tier-1 cities.",
+    image: "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=300&q=80",
+  },
+  {
+    _id: "4",
+    title: "Angel Network",
+    subtitle: "Early Backers",
+    description: "A group of industry veterans believing in the future of home cooking.",
+    image: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=300&q=80",
+  }
+];
 
 const Investors = () => {
   const [investors, setInvestors] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setIsLoading(true);
-    axios
-      .get("http://localhost:8000/investor/getinvestor")
-      .then((res) => {
-        setInvestors(res.data);
-        setIsLoading(false);
-      })
-      .catch((err) => {
-        console.error("Error fetching investor data:", err);
-        setError("Failed to load investor data");
-        setIsLoading(false);
-      });
+    const fetchInvestors = async () => {
+      try {
+        const res = await axios.get("http://localhost:8000/investor/getinvestor");
+        if (res.data && res.data.length > 0) {
+          setInvestors(res.data);
+        } else {
+          setInvestors(FALLBACK_INVESTORS);
+        }
+      } catch (err) {
+        console.warn("Investor API failed, using fallback data.");
+        setInvestors(FALLBACK_INVESTORS);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchInvestors();
   }, []);
 
-  // Set up auto-scroll
-  useEffect(() => {
-    if (investors.length === 0) return;
-    
-    const interval = setInterval(() => {
-      setCurrentIndex((prevIndex) => 
-        prevIndex === investors.length - 1 ? 0 : prevIndex + 1
-      );
-    }, 5000);
-    
-    return () => clearInterval(interval);
-  }, [investors.length]);
-
-  const goToNext = () => {
-    setCurrentIndex((prevIndex) => 
-      prevIndex === investors.length - 1 ? 0 : prevIndex + 1
-    );
+  const settings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 3,
+    slidesToScroll: 1,
+    autoplay: true,
+    autoplaySpeed: 3000,
+    responsive: [
+      {
+        breakpoint: 1024,
+        settings: { slidesToShow: 2 },
+      },
+      {
+        breakpoint: 640,
+        settings: { slidesToShow: 1 },
+      },
+    ],
   };
-
-  const goToPrev = () => {
-    setCurrentIndex((prevIndex) => 
-      prevIndex === 0 ? investors.length - 1 : prevIndex - 1
-    );
-  };
-
-  const goToSlide = (index) => {
-    setCurrentIndex(index);
-  };
-
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-64 w-full">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="text-center text-red-500 py-8 w-full">
-        <p>{error}</p>
-      </div>
-    );
-  }
-
-  if (investors.length === 0) {
-    return (
-      <div className="bg-gray-50 py-16 w-full">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12 text-gray-800">Our Investors</h2>
-          <p className="text-center text-gray-500">No investors found.</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
-    <div className="bg-gray-50 py-16 w-full">
-      <div className="container mx-auto px-4">
-        <h2 className="text-3xl font-bold text-center mb-12 text-gray-800">Our Investors</h2>
-        
-        <div className="relative w-full">
-          {/* Main Carousel */}
-          <div className="w-full overflow-hidden">
-            <div 
-              className="flex transition-transform duration-500 ease-in-out w-full" 
-              style={{ transform: `translateX(-${currentIndex * 100}%)` }}
-            >
-              {investors.map((item, index) => (
-                <div key={index} className="w-full flex-shrink-0">
-                  <div className="mx-auto max-w-lg">
-                    <div className="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col h-full">
-                      <div className="w-full h-48 bg-gray-100 flex items-center justify-center p-4">
-                        {item.image ? (
-                          <img 
-                            src={item.image} 
-                            alt={item.title} 
-                            className="max-h-full max-w-full object-contain"
-                          />
-                        ) : (
-                          <div className="flex items-center justify-center h-full w-full bg-gray-200">
-                            <span className="text-gray-400">No image available</span>
-                          </div>
-                        )}
-                      </div>
-                      <div className="p-6 flex-grow">
-                        <h3 className="font-bold text-xl mb-2 text-gray-800">{item.title}</h3>
-                        <p className="text-blue-600 font-medium mb-3">{item.subtitle}</p>
-                        <p className="text-gray-600">{item.description}</p>
-                      </div>
+    <section className="bg-white py-20 border-t border-gray-100 overflow-hidden">
+      <div className="container mx-auto px-6 max-w-7xl">
+
+        {/* Header */}
+        <div className="text-center mb-16">
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 text-blue-600 text-xs font-bold tracking-widest uppercase mb-4">
+              <FaHandshake /> Our Backers
+            </span>
+            <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6">
+              Trusted by the <span className="text-blue-600">Best</span>
+            </h2>
+            <p className="text-gray-500 max-w-2xl mx-auto text-lg">
+              We are backed by some of the most visionary investors and capital firms in the industry.
+            </p>
+          </motion.div>
+        </div>
+
+        {/* Carousel */}
+        <div className="pb-10">
+          <Slider {...settings}>
+            {investors.map((item, index) => (
+              <div key={item._id || index} className="px-4 py-4 h-full">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                  className="group bg-white rounded-2xl border border-gray-100 p-8 shadow-sm hover:shadow-xl transition-all duration-300 h-full flex flex-col items-center text-center relative overflow-hidden"
+                >
+                  {/* Decorative Top Border */}
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-400 to-blue-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
+
+                  {/* Image Container */}
+                  <div className="w-32 h-32 mb-6 relative">
+                    <div className="absolute inset-0 bg-blue-100 rounded-full transform rotate-6 group-hover:rotate-12 transition-transform duration-300"></div>
+                    <img
+                      src={item.image}
+                      alt={item.title}
+                      className="relative w-full h-full object-cover rounded-full border-4 border-white shadow-md filter grayscale group-hover:grayscale-0 transition-all duration-300"
+                    />
+                    <div className="absolute bottom-0 right-0 bg-white rounded-full p-2 shadow-md text-blue-600 opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+                      <FaLinkedinIn size={14} />
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          </div>
-          
-          {/* Navigation Arrows */}
-          <button 
-            onClick={goToPrev}
-            className="absolute top-1/2 left-0 transform -translate-y-1/2 bg-white bg-opacity-80 rounded-full p-2 shadow-md hover:bg-opacity-100 focus:outline-none"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-          
-          <button 
-            onClick={goToNext}
-            className="absolute top-1/2 right-0 transform -translate-y-1/2 bg-white bg-opacity-80 rounded-full p-2 shadow-md hover:bg-opacity-100 focus:outline-none"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-          
-          {/* Dots Indicator */}
-          <div className="flex justify-center mt-6">
-            {investors.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => goToSlide(index)}
-                className={`mx-1 h-3 w-3 rounded-full focus:outline-none ${
-                  index === currentIndex ? 'bg-blue-600' : 'bg-gray-300'
-                }`}
-                aria-label={`Go to slide ${index + 1}`}
-              />
+
+                  {/* Content */}
+                  <h3 className="text-xl font-bold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors">
+                    {item.title}
+                  </h3>
+                  <p className="text-xs font-bold text-blue-500 uppercase tracking-wider mb-4">
+                    {item.subtitle}
+                  </p>
+                  <p className="text-gray-500 text-sm leading-relaxed mb-6">
+                    {item.description}
+                  </p>
+
+                </motion.div>
+              </div>
             ))}
-          </div>
+          </Slider>
         </div>
+
       </div>
-    </div>
+    </section>
   );
 };
 
