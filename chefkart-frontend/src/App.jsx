@@ -18,7 +18,7 @@ const Month = lazy(() => import("./components/CookForAmonth/Month"));
 const OneTime = lazy(() => import("./components/OneTimeCook/OneTime"));
 const Chef = lazy(() => import("./components/Chefforparty/Chef"));
 const Testi = lazy(() => import("./components/Testimonial/Testi"));
-const Career = lazy(() => import("./components/Career/CareerEmptyState"));
+const Career = lazy(() => import("./components/Career/Career"));
 const Blog = lazy(() => import("./components/Blog/Blog"));
 const Investor = lazy(() => import("./components/Investor/Invest"));
 
