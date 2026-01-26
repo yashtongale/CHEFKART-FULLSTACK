@@ -1,13 +1,59 @@
-const { createInvestor, getallInvestor, getInvestorById, updateInvestor, deleteInvestor } = require('../controller/Investor.Controller');
+import express from 'express';
+import {
+    createInvestor,
+    getallInvestor,
+    getInvestorById,
+    updateInvestor,
+    deleteInvestor
+} from '../controllers/Investor.controller.js';
+import { upload } from '../middleware/multer.js';
+import { verifyToken } from '../middleware/auth.middleware.js';
 
-const router = require('express').Router();
+const router = express.Router();
 
-router.post('/createInvestor', createInvestor)
-router.get('/getinvestor', getallInvestor);
-router.get('/get/:id', getInvestorById);
-router.put('/update/:id',updateInvestor) ;
-router.delete('/delete/:id', deleteInvestor)
- 
+/**
+ * @route   POST /api/v1/investors/create
+ * @desc    Add new investor relation content with an image
+ * @access  Private (Admin)
+ */
+router.post(
+    '/create',
+    verifyToken,
+    upload.single('image'),
+    createInvestor
+);
 
+/**
+ * @route   GET /api/v1/investors/all
+ * @desc    Get all investor posts
+ * @access  Public
+ */
+router.get('/all', getallInvestor);
 
-module.exports = router;
+/**
+ * @route   GET /api/v1/investors/:id
+ * @desc    Get a specific investor post
+ * @access  Public
+ */
+router.get('/:id', getInvestorById);
+
+/**
+ * @route   PATCH /api/v1/investors/:id
+ * @desc    Update investor content or image
+ * @access  Private (Admin)
+ */
+router.patch(
+    '/:id',
+    verifyToken,
+    upload.single('image'),
+    updateInvestor
+);
+
+/**
+ * @route   DELETE /api/v1/investors/:id
+ * @desc    Delete investor post and clean Cloudinary
+ * @access  Private (Admin)
+ */
+router.delete('/:id', verifyToken, deleteInvestor);
+
+export default router;

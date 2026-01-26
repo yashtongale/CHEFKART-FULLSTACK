@@ -1,13 +1,59 @@
-const { createKitchen, getallHomeImage, getHomeById, updateHomePage, deletehomePage } = require('../controller/HomePage.Controller');
+import express from 'express';
+import {
+    createKitchen,
+    getallHomeImage,
+    getHomeById,
+    updateHomePage,
+    deletehomePage
+} from '../controllers/HomePage.controller.js';
+import { upload } from '../middleware/multer.js';
+import { verifyToken } from '../middleware/auth.middleware.js';
 
-const router = require('express').Router();
+const router = express.Router();
 
-router.post('/createHomePage', createKitchen)
-router.get('/getAll', getallHomeImage);
-router.get('/get/:id', getHomeById);
-router.put('/update/:id',updateHomePage) ;
-router.delete('/delete/:id', deletehomePage)
- 
+/**
+ * @route   POST /api/v1/home-page/create
+ * @desc    Create a new homepage section with an image
+ * @access  Private (Admin)
+ */
+router.post(
+    '/create',
+    verifyToken,
+    upload.single('image'),
+    createKitchen
+);
 
+/**
+ * @route   GET /api/v1/home-page/all
+ * @desc    Get all homepage sections
+ * @access  Public
+ */
+router.get('/all', getallHomeImage);
 
-module.exports = router;
+/**
+ * @route   GET /api/v1/home-page/:id
+ * @desc    Get a specific section by ID
+ * @access  Public
+ */
+router.get('/:id', getHomeById);
+
+/**
+ * @route   PATCH /api/v1/home-page/:id
+ * @desc    Update homepage section content or image
+ * @access  Private (Admin)
+ */
+router.patch(
+    '/:id',
+    verifyToken,
+    upload.single('image'),
+    updateHomePage
+);
+
+/**
+ * @route   DELETE /api/v1/home-page/:id
+ * @desc    Delete a section and clean Cloudinary storage
+ * @access  Private (Admin)
+ */
+router.delete('/:id', verifyToken, deletehomePage);
+
+export default router;
