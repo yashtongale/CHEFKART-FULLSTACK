@@ -5,7 +5,7 @@ import {
     deleteGalleryById, // Added for single gallery deletion
     deleteGallery
 } from '../controllers/Gallery.controller.js';
-import { upload } from '../middleware/multer.js';
+import { upload } from '../config/cloudinary.js';
 import { verifyToken } from '../middleware/auth.middleware.js';
 
 const router = express.Router();

@@ -1,4 +1,4 @@
-import Connect from "../models/ConnectModel.js";
+import Connect from "../models/Connect.model.js";
 import { cloudinary } from "../config/cloudinary.js";
 import createError from "http-errors";
 

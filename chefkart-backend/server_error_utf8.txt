@@ -1,0 +1,48 @@
+﻿node : file:///D:/CHE
+FKART-FULLSTACK/chefk
+art-backend/routes/Bl
+og.route.js:4
+At line:1 char:1
++ node app.js 2>&1 | 
+Out-File -FilePath se
+rver_error_utf8.txt 
+-Encoding ...
++ ~~~~~~~~~~~~~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: (file://   
+ /D:/CHEF...Blog.    
+route.js:4:Strin    
+g) [], RemoteExc    
+eption
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 
+    getallBlogs,
+    ^^^^^^^^^^^
+SyntaxError: The 
+requested module '../
+controllers/Blog.cont
+roller.js' does not 
+provide an export 
+named 'getallBlogs'
+    at ModuleJob._ins
+tantiate (node:intern
+al/modules/esm/module
+_job:177:21)
+    at async 
+ModuleJob.run (node:i
+nternal/modules/esm/m
+odule_job:260:5)
+    at async onImport
+.tracePromise.__proto
+__ (node:internal/mod
+ules/esm/loader:543:2
+6)
+    at async asyncRun
+EntryPointWithESMLoad
+er (node:internal/mod
+ules/run_main:116:5)
+
+Node.js v23.1.0

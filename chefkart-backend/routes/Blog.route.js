@@ -1,12 +1,12 @@
 import express from 'express';
 import {
     createBlog,
-    getallBlogs,
+    getAllBlogs,
     getBlogById,
     updateBlog,
     deleteBlog
 } from '../controllers/Blog.controller.js';
-import { upload } from '../middleware/multer.js'; // Our Cloudinary storage engine
+import { upload } from '../config/cloudinary.js'; // Our Cloudinary storage engine
 import { verifyToken } from '../middleware/auth.middleware.js'; // To protect admin routes
 
 const router = express.Router();
@@ -28,7 +28,7 @@ router.post(
  * @desc    Get all blogs
  * @access  Public
  */
-router.get('/all', getallBlogs);
+router.get('/all', getAllBlogs);
 
 /**
  * @route   GET /api/v1/blogs/:id

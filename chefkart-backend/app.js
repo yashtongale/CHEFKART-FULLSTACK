@@ -1,15 +1,15 @@
+import dotenv from 'dotenv';
+dotenv.config();
 import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
 import createError from 'http-errors';
-import dotenv from 'dotenv';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import hpp from 'hpp';
 import xss from 'xss-clean';
 
 // Config
-dotenv.config();
 import connectDB from './config/db.js';
 
 // Route Imports (Standardized to match actual filenames)
@@ -17,8 +17,8 @@ import userRoutes from './routes/User.route.js';
 import blogRoutes from './routes/Blog.route.js';
 import testimonialRoutes from './routes/Testimonial.route.js';
 import galleryRoutes from './routes/Gallery.route.js';
-import carouselRoutes from './routes/Crousel.route.js';
-import bookingRoutes from './routes/Booking.routes.js';
+import carouselRoutes from './routes/Carousel.route.js';
+import bookingRoutes from './routes/Booking.route.js';
 import chefRoutes from './routes/Chef.route.js';
 import connectRoutes from './routes/Connect.route.js';
 import serviceRoutes from './routes/Service.route.js';
@@ -27,7 +27,7 @@ import investorContactRoutes from './routes/InvestorContact.route.js';
 import investorRoutes from './routes/Investor.route.js';
 import foodRoutes from './routes/Food.route.js';
 import joinRoutes from './routes/Join.route.js';
-import foodGalleryRoutes from './routes/FoodGall.route.js';
+import foodGalleryRoutes from './routes/FoodGallery.route.js';
 import contactRoutes from './routes/Contact.route.js';
 
 // Initialize App
@@ -55,9 +55,10 @@ const limiter = rateLimit({
 app.use('/api', limiter);
 
 const corsOptions = {
-  origin: process.env.CLIENT_URL || '*',
+  origin: [process.env.CLIENT_URL || 'http://localhost:5173'],
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   credentials: true,
+  optionsSuccessStatus: 200
 };
 app.use(cors(corsOptions));
 

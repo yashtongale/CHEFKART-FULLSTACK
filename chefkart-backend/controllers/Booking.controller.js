@@ -1,4 +1,4 @@
-import Booking from '../models/Booking.Model.js';
+import Booking from '../models/Booking.model.js';
 import createError from 'http-errors';
 
 /**

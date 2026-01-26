@@ -6,7 +6,7 @@ import {
     updateConnect,
     deleteConnect
 } from '../controllers/Connect.controller.js';
-import { upload } from '../middleware/multer.js';
+import { upload } from '../config/cloudinary.js';
 import { verifyToken } from '../middleware/auth.middleware.js';
 
 const router = express.Router();

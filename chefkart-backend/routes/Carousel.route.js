@@ -1,13 +1,13 @@
 import express from 'express';
 import {
-    createCrousel,
-    getAllCrousel,
-    getCrouselById,
-    updateCrousel,
-    deleteCrouselById,
-    deleteCrousel
-} from '../controllers/Crousel.controller.js';
-import { upload } from '../middleware/multer.js';
+    createCarousel,
+    getAllCarousel,
+    getCarouselById,
+    updateCarousel,
+    deleteCarouselById,
+    deleteAllCarousel
+} from '../controllers/Carousel.controller.js';
+import { upload } from '../config/cloudinary.js';
 import { verifyToken } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
@@ -21,7 +21,7 @@ router.post(
     '/create',
     verifyToken,
     upload.single('image'),
-    createCrousel
+    createCarousel
 );
 
 /**
@@ -29,14 +29,14 @@ router.post(
  * @desc    Get all carousel slides
  * @access  Public
  */
-router.get('/all', getAllCrousel);
+router.get('/all', getAllCarousel);
 
 /**
  * @route   GET /api/v1/carousel/:id
  * @desc    Get a specific slide
  * @access  Public
  */
-router.get('/:id', getCrouselById);
+router.get('/:id', getCarouselById);
 
 /**
  * @route   PATCH /api/v1/carousel/:id
@@ -47,7 +47,7 @@ router.patch(
     '/:id',
     verifyToken,
     upload.single('image'),
-    updateCrousel
+    updateCarousel
 );
 
 /**
@@ -55,13 +55,13 @@ router.patch(
  * @desc    Delete slide and clean Cloudinary
  * @access  Private (Admin)
  */
-router.delete('/:id', verifyToken, deleteCrouselById);
+router.delete('/:id', verifyToken, deleteCarouselById);
 
 /**
  * @route   DELETE /api/v1/carousel/delete-all
  * @desc    Clear entire carousel
  * @access  Private (Admin)
  */
-router.delete('/delete-all', verifyToken, deleteCrousel);
+router.delete('/delete-all', verifyToken, deleteAllCarousel);
 
 export default router;

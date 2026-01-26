@@ -1,4 +1,4 @@
-import ChefModel from '../models/Chef.Model.js';
+import ChefModel from '../models/Chef.model.js';
 import { cloudinary } from '../config/cloudinary.js';
 import createError from 'http-errors';
 

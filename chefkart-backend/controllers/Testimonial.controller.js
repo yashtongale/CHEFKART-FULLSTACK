@@ -1,4 +1,4 @@
-import Testimonial from '../models/Testimonial.Model.js';
+import Testimonial from '../models/Testimonial.model.js';
 import { cloudinary } from '../config/cloudinary.js';
 import createError from 'http-errors';
 

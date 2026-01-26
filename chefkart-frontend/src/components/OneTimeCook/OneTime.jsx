@@ -3,16 +3,16 @@ import { motion } from 'framer-motion';
 
 // --- Component Imports ---
 // Make sure these paths match your actual project structure
-import Carousel2 from './Carousel2';       // Hero Section
-import BannerDow2 from './BannerDow2';     // Intro Section
-import StatsSections from './StatsSection'; // Stats
+// import Carousel2 from './Carousel2';       // Hero Section
+import BannerDow from './BannerDow';     // Intro Section
+import Statsection from './Statsection'; // Stats
 import Work from './Work';                 // How it Works
-import Heart from './Heart';               // Customer Story Video
-import Testimonials from './Testimonials'; // Reviews Slider
+import Heart1 from './Heart1';           // Customer Story Video
+import Testimon from './Testimon'; // Reviews Slider
 import Lower3 from './Lower3';             // "No time to cook" Section
-import Lower5 from './Lower5';             // "Why order online" Section
-import FaqOne from './FaqOne';             // FAQ
-import FloatingBanner from './FloatingBanner'; // Sticky Bottom CTA
+import Lower from './Lower';             // "Why order online" Section
+import FaqOnetime from './FaqOnetime';             // FAQ
+import FloatingBannerd from './FloatingBannerd'; // Sticky Bottom CTA
 
 const OneTime = () => {
   return (
@@ -25,34 +25,34 @@ const OneTime = () => {
     >
 
       {/* 1. Hero Section */}
-      <Carousel2 />
+      {/* <Carousel2 /> */}
 
       {/* 2. Introduction */}
-      <BannerDow2 />
+      <BannerDow />
 
       {/* 3. Key Metrics */}
-      <StatsSections />
+      <Statsection />
 
       {/* 4. Process (How it works) */}
       <Work />
 
       {/* 5. Customer Spotlight (Video) */}
-      <Heart />
+      <Heart1 />
 
       {/* 6. Social Proof (Reviews) */}
-      <Testimonials />
+      <Testimon />
 
       {/* 7. Speed/Urgency Section */}
       <Lower3 />
 
       {/* 8. Value Proposition */}
-      <Lower5 />
+      <Lower />
 
       {/* 9. FAQ */}
-      <FaqOne />
+      <FaqOnetime />
 
       {/* 10. Sticky Bottom CTA */}
-      <FloatingBanner />
+      <FloatingBannerd />
 
     </motion.main>
   );

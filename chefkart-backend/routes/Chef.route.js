@@ -6,8 +6,8 @@ import {
     updateChef,
     deleteCheftById,
     DeleteAllChef
-} from '../controllers/Chefs.controller.js';
-import { upload } from '../middleware/multer.js';
+} from '../controllers/Chef.controller.js';
+import { upload } from '../config/cloudinary.js';
 import { verifyToken } from '../middleware/auth.middleware.js';
 
 const router = express.Router();

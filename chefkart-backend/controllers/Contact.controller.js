@@ -1,4 +1,4 @@
-import Contact from "../models/Contact.Models.js";
+import Contact from "../models/Contact.model.js";
 import createError from "http-errors";
 
 /**

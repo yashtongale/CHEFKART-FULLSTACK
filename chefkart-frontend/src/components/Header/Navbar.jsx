@@ -118,8 +118,8 @@ const Navbar = () => {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className={`px-6 py-2.5 rounded-full font-bold shadow-lg transition-all ${isHome && !isScrolled
-                  ? "bg-white text-orange-600 hover:bg-gray-100"
-                  : "bg-orange-500 text-white hover:bg-orange-600 hover:shadow-orange-200"
+                ? "bg-white text-orange-600 hover:bg-gray-100"
+                : "bg-orange-500 text-white hover:bg-orange-600 hover:shadow-orange-200"
                 }`}
             >
               Book a Cook
