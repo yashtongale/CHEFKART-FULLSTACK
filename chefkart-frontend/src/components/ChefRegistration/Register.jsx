@@ -8,12 +8,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FaCloudUploadAlt, FaTrash, FaPlus, FaTimes } from "react-icons/fa";
 import "react-toastify/dist/ReactToastify.css";
 
-// Environment Variable (Keeping Cloudinary direct for now as it's a 3rd party URL)
+// Keeping Cloudinary direct as it's a 3rd party URL
 const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/de4ks8mkh/image/upload";
 
 // --- 1. Reusable Components ---
 
-// Modern Text Input with Animation
 const FormInput = ({ label, name, type = "text", placeholder, ...props }) => (
   <div className="mb-4">
     <label className="block text-sm font-semibold text-gray-700 mb-2">{label}</label>
@@ -38,7 +37,6 @@ const FormInput = ({ label, name, type = "text", placeholder, ...props }) => (
   </div>
 );
 
-// Image Upload Component with Preview & Loading State
 const ImageUpload = ({ label, fieldName, setFieldValue, value }) => {
   const [uploading, setUploading] = useState(false);
 
@@ -94,7 +92,6 @@ const ImageUpload = ({ label, fieldName, setFieldValue, value }) => {
   );
 };
 
-// Tag Input (For Languages & Locations) - Type and press Enter
 const TagInput = ({ label, name, values, setFieldValue }) => {
   const [input, setInput] = useState("");
 
@@ -135,11 +132,8 @@ const TagInput = ({ label, name, values, setFieldValue }) => {
   );
 };
 
-// --- 2. Main Component ---
-
 const ChefRegister = () => {
 
-  // Validation Schema
   const chefSchema = Yup.object().shape({
     name: Yup.string().required("Required"),
     email: Yup.string().email("Invalid email").required("Required"),
@@ -183,7 +177,6 @@ const ChefRegister = () => {
     <div className="min-h-screen bg-gray-100 py-10 px-4">
       <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
 
-        {/* Header */}
         <div className="bg-gradient-to-r from-orange-500 to-red-600 p-8 text-center text-white">
           <h1 className="text-3xl font-bold">Partner Registration</h1>
           <p className="opacity-90 mt-2">Join the ChefKart family and start your journey</p>
@@ -197,8 +190,6 @@ const ChefRegister = () => {
           >
             {({ values, setFieldValue, isSubmitting }) => (
               <Form>
-
-                {/* --- Section 1: Personal Details --- */}
                 <h3 className="text-xl font-bold text-gray-800 border-b pb-2 mb-6">Personal Details</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormInput label="Full Name" name="name" placeholder="Ex: Rahul Kumar" />
@@ -207,7 +198,6 @@ const ChefRegister = () => {
                   <FormInput label="Years of Experience" name="experience" type="number" placeholder="Ex: 5" />
                 </div>
 
-                {/* --- Section 2: Address --- */}
                 <h3 className="text-xl font-bold text-gray-800 border-b pb-2 mb-6 mt-8">Location</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="md:col-span-2">
@@ -219,10 +209,8 @@ const ChefRegister = () => {
                   <FormInput label="Pincode" name="pincode" type="number" />
                 </div>
 
-                {/* --- Section 3: Professional Info --- */}
                 <h3 className="text-xl font-bold text-gray-800 border-b pb-2 mb-6 mt-8">Professional Info</h3>
 
-                {/* Tag Inputs */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                   <TagInput
                     label="Languages Known"
@@ -243,7 +231,6 @@ const ChefRegister = () => {
                   <FormInput label="Continental Rating (1-10)" name="cuisineRatings.Continental" type="number" />
                 </div>
 
-                {/* Checkboxes as Toggle Cards */}
                 <div className="flex flex-wrap gap-4 mb-6">
                   {['veg', 'nonVeg', 'verified'].map((field) => (
                     <label key={field} className={`cursor-pointer border px-4 py-2 rounded-lg flex items-center gap-2 transition-all ${values[field] ? 'bg-orange-100 border-orange-500 text-orange-700' : 'bg-gray-50 border-gray-200'}`}>
@@ -258,14 +245,12 @@ const ChefRegister = () => {
                   <Field as="textarea" name="aboutCook" rows={4} className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-orange-500 outline-none bg-gray-50" placeholder="Describe skills and specialties..." />
                 </div>
 
-                {/* --- Section 4: Media Uploads --- */}
                 <h3 className="text-xl font-bold text-gray-800 border-b pb-2 mb-6 mt-8">Media Uploads</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <ImageUpload label="Profile Photo" fieldName="profilepic" setFieldValue={setFieldValue} value={values.profilepic} />
                   <ImageUpload label="Default Cook Image" fieldName="default_cook_image" setFieldValue={setFieldValue} value={values.default_cook_image} />
                 </div>
 
-                {/* --- Section 5: Availability --- */}
                 <h3 className="text-xl font-bold text-gray-800 border-b pb-2 mb-6 mt-8">Weekly Availability</h3>
                 <FieldArray name="availability">
                   {({ push, remove }) => (
@@ -296,7 +281,6 @@ const ChefRegister = () => {
                   )}
                 </FieldArray>
 
-                {/* --- Submit Button --- */}
                 <div className="mt-12 pt-6 border-t">
                   <button
                     type="submit"

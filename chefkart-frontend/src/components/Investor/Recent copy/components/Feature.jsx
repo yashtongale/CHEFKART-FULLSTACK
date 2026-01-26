@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Slider from "react-slick";
-import axios from "axios";
+import api from "../../../../services/api";
 import { motion } from "framer-motion";
 import { FaLinkedinIn, FaHandshake } from "react-icons/fa";
 
@@ -15,7 +15,7 @@ const FALLBACK_INVESTORS = [
     title: "Venture Catalysts",
     subtitle: "Lead Investor",
     description: "India's first integrated incubator. Supporting our vision since Day 1.",
-    image: "https://images.unsplash.com/photo-1560179707-f14e90ef3623?auto=format&fit=crop&w=300&q=80", // Placeholder logo/person
+    image: "https://images.unsplash.com/photo-1560179707-f14e90ef3623?auto=format&fit=crop&w=300&q=80",
   },
   {
     _id: "2",
@@ -47,9 +47,10 @@ const Investors = () => {
   useEffect(() => {
     const fetchInvestors = async () => {
       try {
-        const res = await axios.get("http://localhost:8000/investor/getinvestor");
-        if (res.data && res.data.length > 0) {
-          setInvestors(res.data);
+        const res = await api.get("/investors/all");
+        const data = res.data.data || res.data || [];
+        if (data.length > 0) {
+          setInvestors(data);
         } else {
           setInvestors(FALLBACK_INVESTORS);
         }
@@ -116,13 +117,12 @@ const Investors = () => {
                   initial={{ opacity: 0, scale: 0.95 }}
                   whileInView={{ opacity: 1, scale: 1 }}
                   transition={{ delay: index * 0.1 }}
+                  whileHover={{ y: -5 }}
                   viewport={{ once: true }}
                   className="group bg-white rounded-2xl border border-gray-100 p-8 shadow-sm hover:shadow-xl transition-all duration-300 h-full flex flex-col items-center text-center relative overflow-hidden"
                 >
-                  {/* Decorative Top Border */}
                   <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-400 to-blue-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
 
-                  {/* Image Container */}
                   <div className="w-32 h-32 mb-6 relative">
                     <div className="absolute inset-0 bg-blue-100 rounded-full transform rotate-6 group-hover:rotate-12 transition-transform duration-300"></div>
                     <img
@@ -135,7 +135,6 @@ const Investors = () => {
                     </div>
                   </div>
 
-                  {/* Content */}
                   <h3 className="text-xl font-bold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors">
                     {item.title}
                   </h3>
@@ -145,13 +144,11 @@ const Investors = () => {
                   <p className="text-gray-500 text-sm leading-relaxed mb-6">
                     {item.description}
                   </p>
-
                 </motion.div>
               </div>
             ))}
           </Slider>
         </div>
-
       </div>
     </section>
   );
