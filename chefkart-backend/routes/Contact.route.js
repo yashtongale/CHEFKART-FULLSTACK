@@ -1,8 +1,32 @@
-const { createContact, getallContact } = require('../controller/Contact.controller');
+import express from 'express';
+import {
+    createContact,
+    getallContact,
+    // deleteContact // Assuming we add this to the controller
+} from '../controllers/Contact.controller.js';
+import { verifyToken } from '../middleware/auth.middleware.js';
 
-const router = require('express').Router();
+const router = express.Router();
 
-router.post('/createContact',createContact  );
-router.get('/get',  getallContact);
+/**
+ * @route   POST /api/v1/contacts/submit
+ * @desc    Submit a new contact inquiry (Lead)
+ * @access  Public
+ */
+router.post('/submit', createContact);
 
-module.exports = router;
+/**
+ * @route   GET /api/v1/contacts/all
+ * @desc    Get all contact inquiries
+ * @access  Private (Admin)
+ */
+router.get('/all', verifyToken, getallContact);
+
+/**
+ * @route   DELETE /api/v1/contacts/:id
+ * @desc    Remove an inquiry record
+ * @access  Private (Admin)
+ */
+// router.delete('/:id', verifyToken, deleteContact);
+
+export default router;
