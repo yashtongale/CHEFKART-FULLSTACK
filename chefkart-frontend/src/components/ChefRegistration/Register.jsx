@@ -2,13 +2,13 @@ import React, { useState } from "react";
 import { Formik, Form, Field, FieldArray, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import axios from "axios";
+import api from "../../services/api";
 import { toast, ToastContainer } from "react-toastify";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaCloudUploadAlt, FaTrash, FaPlus, FaTimes } from "react-icons/fa";
 import "react-toastify/dist/ReactToastify.css";
 
-// Environment Variable
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+// Environment Variable (Keeping Cloudinary direct for now as it's a 3rd party URL)
 const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/de4ks8mkh/image/upload";
 
 // --- 1. Reusable Components ---
@@ -168,7 +168,7 @@ const ChefRegister = () => {
 
   const handleSubmit = async (values, { resetForm, setSubmitting }) => {
     try {
-      await axios.post(`${API_URL}/chef/create`, values);
+      await api.post("/chefs/create", values);
       toast.success("👨‍🍳 Chef Registered Successfully!");
       resetForm();
     } catch (error) {

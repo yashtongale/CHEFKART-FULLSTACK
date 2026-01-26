@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from "react";
 import Slider from "react-slick";
-import axios from "axios";
+import api from "../../services/api";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Slick CSS (Required)
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-
-const API_URL = "http://localhost:8000/food/getall";
 
 // High-quality fallback data in case API fails or is loading
 const FALLBACK_IMAGES = [
@@ -29,9 +27,9 @@ const GalleryAutoSlideZoom = () => {
   useEffect(() => {
     const fetchImages = async () => {
       try {
-        const response = await axios.get(API_URL);
-        if (response.data && response.data.length > 0) {
-          setImages(response.data);
+        const response = await api.get("/food/all");
+        if (response.data && response.data.data && response.data.data.length > 0) {
+          setImages(response.data.data);
         } else {
           setImages(FALLBACK_IMAGES);
         }

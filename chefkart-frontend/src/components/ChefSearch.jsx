@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import api from "../services/api";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaSearch, FaMapMarkerAlt, FaStar, FaPhoneAlt, FaUtensils, FaFilter } from "react-icons/fa";
@@ -76,7 +76,7 @@ const ChefDirectory = () => {
   useEffect(() => {
     const fetchChefs = async () => {
       try {
-        const response = await axios.get("http://localhost:8000/chef/get");
+        const response = await api.get("/chefs/all");
         if (response.data && response.data.data && response.data.data.length > 0) {
           setChefs(response.data.data);
         } else {

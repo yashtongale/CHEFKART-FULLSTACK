@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import axios from "axios";
+import api from "../services/api";
 import { motion } from "framer-motion";
 import {
   FaMapMarkerAlt,
@@ -11,7 +11,8 @@ import {
   FaCheckCircle,
   FaArrowLeft,
   FaClock,
-  FaHome
+  FaHome,
+  FaUserCircle
 } from "react-icons/fa";
 
 // Fallback data for demo purposes if API fails
@@ -47,7 +48,7 @@ const ChefDetails = () => {
   useEffect(() => {
     const fetchChef = async () => {
       try {
-        const res = await axios.get(`http://localhost:8000/chef/get`);
+        const res = await api.get(`/chefs/all`);
         const found = res.data.data.find((c) => c._id === id);
         setChef(found || FALLBACK_CHEF);
       } catch (err) {
@@ -225,12 +226,5 @@ const ChefDetails = () => {
     </div>
   );
 };
-
-// Helper icon for About section
-const FaUserCircle = ({ className }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" className={className} width="1em" height="1em" viewBox="0 0 448 512" fill="currentColor">
-    <path d="M224 256c70.7 0 128-57.3 128-128S294.7 0 224 0 96 57.3 96 128s57.3 128 128 128zm89.6 32h-16.7c-22.2 10.2-46.9 16-72.9 16s-50.6-5.8-72.9-16h-16.7C60.2 288 0 348.2 0 422.4V464c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48v-41.6c0-74.2-60.2-134.4-134.4-134.4z" />
-  </svg>
-);
 
 export default ChefDetails;

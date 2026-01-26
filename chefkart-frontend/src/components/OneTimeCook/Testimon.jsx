@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Slider from "react-slick";
-import axios from "axios";
+import api from "../../services/api";
 import { motion } from "framer-motion";
 import { FaQuoteLeft, FaStar, FaUserCircle } from "react-icons/fa";
 
@@ -47,7 +47,7 @@ const Testimonials = () => {
   useEffect(() => {
     const fetchTestimonials = async () => {
       try {
-        const response = await axios.get("http://localhost:8000/testimonial/get");
+        const response = await api.get("/testimonials/all");
         if (response.data && response.data.data && response.data.data.length > 0) {
           setTestimonialsData(response.data.data);
         } else {

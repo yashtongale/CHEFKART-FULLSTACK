@@ -1,14 +1,11 @@
 import React, { useEffect, useState } from "react";
 import Slider from "react-slick";
-import axios from "axios";
+import api from "../../services/api";
 import { FaQuoteLeft, FaStar } from "react-icons/fa";
 
 // Import Slick CSS (Crucial!)
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-
-// Environment Variable
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 const Testimonial = () => {
   const [testimonials, setTestimonials] = useState([]);
@@ -17,7 +14,7 @@ const Testimonial = () => {
   useEffect(() => {
     const fetchTestimonials = async () => {
       try {
-        const response = await axios.get(`${API_URL}/testimonial/get`);
+        const response = await api.get("/testimonials/all");
         // Handle different API response structures safely
         const data = response.data.data || response.data || [];
         setTestimonials(data);
@@ -92,10 +89,6 @@ const Testimonial = () => {
           <Slider {...settings}>
             {testimonials.map((item) => (
               <div key={item._id} className="px-4 pt-10 pb-10">
-                {/* Card Design:
-                   - 'mt-10' creates space for the floating image
-                   - 'relative' allows positioning the quote icon
-                */}
                 <div className="bg-white rounded-2xl shadow-lg p-8 relative hover:shadow-2xl transition-shadow duration-300 border border-gray-100 h-full flex flex-col items-center text-center group">
 
                   {/* Floating Profile Image */}
@@ -112,7 +105,6 @@ const Testimonial = () => {
 
                   {/* Content */}
                   <div className="mt-10 relative z-10">
-                    {/* Mock Stars for credibility */}
                     <div className="flex justify-center gap-1 text-yellow-400 mb-4 text-sm">
                       {[...Array(5)].map((_, i) => <FaStar key={i} />)}
                     </div>

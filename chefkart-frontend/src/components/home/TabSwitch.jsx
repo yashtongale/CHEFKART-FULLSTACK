@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import api from "../../services/api";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaUser, FaUsers, FaCheckCircle, FaArrowRight } from "react-icons/fa";
 
@@ -31,9 +31,9 @@ const TabSwitchComponent = () => {
     const fetchHomeData = async () => {
       setLoading(true);
       try {
-        const response = await axios.get("http://localhost:8000/home/getall");
-        if (response.data && response.data.length > 0) {
-          setData(response.data);
+        const response = await api.get("/home-page/all");
+        if (response.data && response.data.data && response.data.data.length > 0) {
+          setData(response.data.data);
         }
       } catch (error) {
         console.warn("Backend not found, using fallback data.");

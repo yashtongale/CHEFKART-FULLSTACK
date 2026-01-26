@@ -1,9 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import api from "../../services/api";
 import { motion } from 'framer-motion';
-
-// Use environment variable for the API URL if available, else fallback to localhost
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 const Cater = () => {
   const [data, setData] = useState([]);
@@ -14,8 +11,9 @@ const Cater = () => {
     // defined as an async function for cleaner syntax
     const fetchData = async () => {
       try {
-        const res = await axios.get(`${API_URL}/join/get`);
-        setData(res.data);
+        const res = await api.get("/join/all");
+        const result = res.data.data || res.data || [];
+        setData(result);
       } catch (err) {
         console.error('Error fetching data:', err);
         setError("Failed to load content.");

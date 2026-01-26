@@ -1,10 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
-import axios from "axios";
+import api from "../../services/api";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
-
-// Environment variable handling
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 const Carousel = () => {
   const [slides, setSlides] = useState([]);
@@ -17,8 +14,9 @@ const Carousel = () => {
   useEffect(() => {
     const fetchSlides = async () => {
       try {
-        const res = await axios.get(`${API_URL}/crousel/get`);
-        const formattedSlides = res.data.map((item) => ({
+        const res = await api.get("/carousel/all");
+        const data = res.data.data || res.data || [];
+        const formattedSlides = data.map((item) => ({
           id: item._id || Math.random(),
           title: item.title || "",
           description: item.content || "",

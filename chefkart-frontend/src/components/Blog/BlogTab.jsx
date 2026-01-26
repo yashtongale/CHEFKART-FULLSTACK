@@ -1,11 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
-import axios from "axios";
+import api from "../../services/api";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaTimes, FaCalendarAlt, FaClock } from "react-icons/fa";
-
-// Use environment variable for API URL (Best Practice)
-// Create a .env file with: VITE_API_URL=http://localhost:8000
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 const BlogTab = () => {
     const [blogs, setBlogs] = useState([]);
@@ -21,8 +17,12 @@ const BlogTab = () => {
     useEffect(() => {
         const fetchBlogs = async () => {
             try {
-                const response = await axios.get(`${API_URL}/blog/getAll`);
-                setBlogs(response.data);
+                const response = await api.get("/blogs/all");
+                if (response.data && response.data.data) {
+                    setBlogs(response.data.data);
+                } else {
+                    setBlogs(response.data);
+                }
             } catch (err) {
                 setError("Failed to load stories. Please try again later.");
                 console.error(err);
@@ -54,8 +54,12 @@ const BlogTab = () => {
         // If you need full details that aren't in the list, fetch them here silently
         // and update `selectedBlog` when data arrives.
         try {
-            const res = await axios.get(`${API_URL}/blog/get/${blog._id}`);
-            setSelectedBlog(res.data);
+            const res = await api.get(`/blogs/${blog._id}`);
+            if (res.data && res.data.data) {
+                setSelectedBlog(res.data.data);
+            } else {
+                setSelectedBlog(res.data);
+            }
         } catch (e) {
             console.error("Background fetch failed", e);
         }
