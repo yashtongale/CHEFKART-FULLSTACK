@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 
 // --- Component Imports ---
 // Ensure these paths match where you saved the files!
-import AnnouncementBanner from './AnnouncementBanner'; // Formerly ./Bottom
+import AnnouncementBanner from './Bottom.jsx'; // Formerly ./Bottom
 import SignupSection from './SignupSection';
 import PressReleases from './PresRelease';
 import MissionSection from './Mission';
