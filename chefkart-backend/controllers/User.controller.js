@@ -1,4 +1,4 @@
-import User from "../models/User.model.js";
+import User from "../models/User.Model.js";
 import jwt from "jsonwebtoken";
 import createError from "http-errors";
 
