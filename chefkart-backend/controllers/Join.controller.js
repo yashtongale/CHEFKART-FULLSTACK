@@ -1,4 +1,4 @@
-import Join from "../models/Join.model.js";
+import Join from "../models/Join.Model.js";
 import { cloudinary } from "../config/cloudinary.js";
 import createError from "http-errors";
 
