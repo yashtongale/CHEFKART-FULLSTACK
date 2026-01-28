@@ -5,8 +5,8 @@ import { motion } from 'framer-motion';
 // Ensure these point to the files you created!
 import Carousel3 from './Crouse.jsx';       // Hero Section (Reviews)
 import Testimonial1 from './Testim.jsx'; // The Slider Component
-import Heart3 from './Heart3';             // (Waiting for code) - likely 'Uppertesti'
-import Heart2 from './Heart2';             // Partner Video (Ajnahar)
+import Heart3 from './Uppertesti.jsx';             // (Waiting for code) - likely 'Uppertesti'
+import Heart2 from './';             // Partner Video (Ajnahar)
 import Heart1 from './Heart1';             // Customer Video (Pramiti)
 
 const Testi = () => {
