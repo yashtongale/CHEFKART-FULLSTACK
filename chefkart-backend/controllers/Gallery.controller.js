@@ -1,4 +1,4 @@
-import Gallery from "../models/Gallery.model.js";
+import Gallery from "../models/Gallery.Model.js";
 import { cloudinary } from "../config/cloudinary.js";
 import createError from "http-errors";
 
