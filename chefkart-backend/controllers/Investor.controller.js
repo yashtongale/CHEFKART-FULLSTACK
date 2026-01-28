@@ -1,4 +1,4 @@
-import Investor from "../models/Investor.model.js";
+import Investor from "../models/Investor.Model.js";
 import { cloudinary } from "../config/cloudinary.js";
 import createError from "http-errors";
 
