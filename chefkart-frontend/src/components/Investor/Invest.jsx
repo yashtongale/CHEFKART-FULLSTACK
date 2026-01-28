@@ -8,7 +8,7 @@ import SignupSection from './SignupSection';
 import PressReleases from './PresRelease';
 import MissionSection from './Mission';
 import Carousel2 from './Slider2'; // The "Trusted Platform" section
-import Investors from './Investors'; // Formerly ./Recent copy/...
+import Investors from './data/data'; // Formerly ./Recent copy/...
 
 const Invest = () => {
   return (
