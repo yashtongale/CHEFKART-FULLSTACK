@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import Carousel3 from './Crouse.jsx';       // Hero Section (Reviews)
 import Testimonial1 from './Testim.jsx'; // The Slider Component
 import Heart3 from './Uppertesti.jsx';             // (Waiting for code) - likely 'Uppertesti'
-import Heart2 from './';             // Partner Video (Ajnahar)
+import Heart2 from './LowerTesti2.jsx';             // Partner Video (Ajnahar)
 import Heart1 from './Heart1';             // Customer Video (Pramiti)
 
 const Testi = () => {
