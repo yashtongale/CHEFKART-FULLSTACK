@@ -1,4 +1,4 @@
-import InvestorContact from "../models/InvestorContact.model.js";
+import InvestorContact from "../models/InvestorContact.Model.js";
 import createError from "http-errors";
 
 /**
