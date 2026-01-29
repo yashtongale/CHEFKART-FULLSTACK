@@ -55,11 +55,15 @@ const limiter = rateLimit({
 app.use('/api', limiter);
 
 app.use(cors({
-  origin: 'http://localhost:5173','https://chefkart-fullstack-16.onrender.com'
-  credentials: true,
+  origin: [
+    'https://chefkart-fullstack-15.onrender.com',
+    'http://localhost:5173'
+  ],
+  credentials: true,  // <-- THIS LINE CAUSING SYNTAX ERROR
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
 
 
 if (process.env.NODE_ENV === 'development') {
