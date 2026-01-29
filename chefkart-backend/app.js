@@ -55,7 +55,7 @@ const limiter = rateLimit({
 app.use('/api', limiter);
 
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: 'http://localhost:5173','https://chefkart-fullstack-16.onrender.com'
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -71,7 +71,7 @@ if (process.env.NODE_ENV === 'development') {
 // ====================================================
 
 // Health Check
-app.get('/', (req, res) => {
+app.get('/health', (req, res) => {
   res.status(200).json({
     status: 'success',
     message: 'ChefKart API is live 🐻',
