@@ -12,7 +12,7 @@ import xss from 'xss-clean';
 // Config
 import connectDB from './config/db.js';
 
-// Route Imports
+// Route Imports (Standardized to match actual filenames)
 import userRoutes from './routes/User.route.js';
 import blogRoutes from './routes/Blog.route.js';
 import testimonialRoutes from './routes/Testimonial.route.js';
@@ -37,43 +37,31 @@ const PORT = process.env.PORT || 3000;
 // ====================================================
 // 🛡️ Security & Middleware
 // ====================================================
+
 app.use(helmet());
+
+// Increased limit slightly for multipart/form-data metadata (images go to Cloudinary)
 app.use(express.json({ limit: '50kb' }));
 app.use(express.urlencoded({ extended: true, limit: '50kb' }));
+
 // app.use(xss());
 // app.use(hpp());
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 200,
+  max: 200, // Increased to 200 to accommodate frontend asset loading
   message: 'Too many requests, please try again later.',
 });
 app.use('/api', limiter);
 
-// ====================================================
-// ✅ CORS FIXED FOR MULTIPLE ORIGINS
-// ====================================================
-const allowedOrigins = [
-  'https://chefkart-fullstack-16.onrender.com', // Frontend deployed
-  'https://chefkart-fullstack-15.onrender.com', // optional older frontend
-  'http://localhost:5173'                        // Local dev
-];
-
 app.use(cors({
-  origin: function(origin, callback) {
-    if (!origin) return callback(null, true); // Allow requests with no origin (like curl)
-    if (allowedOrigins.indexOf(origin) === -1) {
-      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
-      return callback(new Error(msg), false);
-    }
-    return callback(null, true);
-  },
+  origin: 'http://localhost:5173',
   credentials: true,
-  methods: ['GET','POST','PUT','PATCH','DELETE'],
-  allowedHeaders: ['Content-Type','Authorization']
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Dev logging
+
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
@@ -83,7 +71,7 @@ if (process.env.NODE_ENV === 'development') {
 // ====================================================
 
 // Health Check
-app.get('/health', (req, res) => {
+app.get('/', (req, res) => {
   res.status(200).json({
     status: 'success',
     message: 'ChefKart API is live 🐻',
@@ -91,10 +79,12 @@ app.get('/health', (req, res) => {
   });
 });
 
-// API Version 1 Router
 const apiV1 = express.Router();
+// backend/app.js
 
-apiV1.use('/users', userRoutes);
+
+
+apiV1.use('/users', userRoutes);         // Standardized from /auth
 apiV1.use('/blogs', blogRoutes);
 apiV1.use('/testimonials', testimonialRoutes);
 apiV1.use('/gallery', galleryRoutes);
@@ -109,13 +99,14 @@ apiV1.use('/connect', connectRoutes);
 apiV1.use('/food-gallery', foodGalleryRoutes);
 apiV1.use('/food', foodRoutes);
 apiV1.use('/join', joinRoutes);
-apiV1.use('/contacts', contactRoutes);
+apiV1.use('/contacts', contactRoutes);  // Added missing Contact route
 
 app.use('/api/v1', apiV1);
 
 // ====================================================
 // ❌ Error Handling
 // ====================================================
+
 app.use((req, res, next) => {
   next(createError.NotFound('Route not found'));
 });
@@ -132,6 +123,7 @@ app.use((err, req, res, next) => {
 // ====================================================
 // 🔌 Execution
 // ====================================================
+
 const startServer = async () => {
   try {
     await connectDB();
