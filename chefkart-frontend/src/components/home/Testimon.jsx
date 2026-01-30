@@ -43,7 +43,7 @@ const Testimonials = () => {
   useEffect(() => {
     const fetchTestimonials = async () => {
       try {
-        const response = await axios.get("https://chefkart-fullstack-03.onrender.com/testimonial/get");
+        const response = await axios.get("https://chefkart-fullstack-03.onrender.com/testimonial/get/all");
         if (response.data && response.data.data && response.data.data.length > 0) {
           setTestimonialsData(response.data.data);
         } else {
