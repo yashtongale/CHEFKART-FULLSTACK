@@ -31,7 +31,7 @@ const TabSwitchComponent = () => {
     const fetchHomeData = async () => {
       setLoading(true);
       try {
-        const response = await api.get("https://chefkart-fullstack-03.onrender.com//home-page/all");
+        const response = await api.get("https://chefkart-fullstack-03.onrender.com/home-page/all");
         if (response.data && response.data.data && response.data.data.length > 0) {
           setData(response.data.data);
         }
