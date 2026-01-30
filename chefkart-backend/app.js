@@ -55,7 +55,7 @@ const limiter = rateLimit({
 app.use('/api', limiter);
 
 app.use(cors({
-  origin: 'https://chefkart-fullstack-03.onrender.com/',
+  origin: 'https://chefkart-fullstack-02.onrender.com/',
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
