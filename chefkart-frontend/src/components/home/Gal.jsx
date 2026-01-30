@@ -27,7 +27,7 @@ const GalleryAutoSlideZoom = () => {
   useEffect(() => {
     const fetchImages = async () => {
       try {
-        const response = await api.get("https://chefkart-fullstack-03.onrender.com/food/all");
+        const response = await api.get("https://chefkart-fullstack-03.onrender.com/api/v1/food/all");
         if (response.data && response.data.data && response.data.data.length > 0) {
           setImages(response.data.data);
         } else {
