@@ -41,6 +41,18 @@ const PORT = process.env.PORT || 3000;
 app.use(helmet());
 
 // Increased limit slightly for multipart/form-data metadata (images go to Cloudinary)
+import cors from "cors";
+
+app.use(cors({
+  origin: [
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "https://chefkart-fullstack-02.onrender.com"
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true
+}));
+
 app.use(express.json({ limit: '50kb' }));
 app.use(express.urlencoded({ extended: true, limit: '50kb' }));
 
@@ -54,12 +66,7 @@ const limiter = rateLimit({
 });
 app.use('/api', limiter);
 
-app.use(cors({
-  origin: 'https://chefkart-fullstack-02.onrender.com/',
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+
 
 
 if (process.env.NODE_ENV === 'development') {
