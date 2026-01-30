@@ -46,7 +46,7 @@ const Testimonial1 = () => {
   useEffect(() => {
     const fetchTestimonials = async () => {
       try {
-        const response = await api.get("/testimonials/all");
+        const response = await api.get("/testimonials/geta/ll");
         if (response.data && response.data.data && response.data.data.length > 0) {
           setTestimonialsData(response.data.data);
         } else {
