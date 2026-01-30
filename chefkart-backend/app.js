@@ -41,7 +41,7 @@ const PORT = process.env.PORT || 3000;
 app.use(helmet());
 
 // Increased limit slightly for multipart/form-data metadata (images go to Cloudinary)
-import cors from "cors";
+
 
 app.use(cors({
   origin: [
